@@ -1,24 +1,31 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link>
-    <router-link to="/login">Login</router-link>
-    <router-link to="/register">Register</router-link>
-    <router-link to="/profile">Profile</router-link>
-    <router-link to="/create-task">Create Task</router-link>
+  <nav class="navbar">
+    <router-link to="/login" class="navbar-item">Вход</router-link>
+    <router-link to="/register" class="navbar-item">Регистрация</router-link>
+    <router-link to="/profile" class="navbar-item">Профиль</router-link>
+    <router-link to="/calendar" class="navbar-item">Календарь</router-link>
   </nav>
 </template>
 
+<script>
+export default {
+  name: 'Navbar'
+};
+</script>
+
 <style scoped>
-nav {
-  margin-bottom: 20px;
+.navbar {
+  display: flex;
+  justify-content: center;
+  background-color: #2C3E50;
+  padding: 10px;
 }
-nav a {
+.navbar-item {
+  color: orange;
   margin: 0 10px;
   text-decoration: none;
-  color: #42b983;
 }
-nav a.router-link-exact-active {
-  font-weight: bold;
-  color: #35495e;
+.navbar-item:hover {
+  text-decoration: underline;
 }
 </style>

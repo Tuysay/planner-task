@@ -1,32 +1,72 @@
+
 <template>
-  <div>
-    <h1>Login Page</h1>
-    <form>
-      <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" />
+  <div class="login">
+    <h1>Вход</h1>
+    <form @submit.prevent="login">
+      <div class="form-group">
+        <label for="username">Логин:</label>
+        <input type="text" id="username" v-model="username" required>
       </div>
-      <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" />
+      <div class="form-group">
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" v-model="password" required>
       </div>
-      <button type="submit">Login</button>
+      <button type="submit" @click="toMain" class="login-button">Войти</button>
     </form>
   </div>
 </template>
 
+<script>
+export default {
+  name: 'Login',
+  data() {
+    return {
+      username: '',
+      password: ''
+    };
+  },
+  methods: {
+    login() {
+      // Логика входа будет добавлена позже
+      console.log('Вход выполнен');
+      // this.$router.push("/");
+    },
+    toMain() {
+      this.$router.push("/");
+    },
+  },
+
+
+};
+</script>
+
 <style scoped>
-form {
-  display: flex;
-  flex-direction: column;
+.login {
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
 }
-div {
-  margin-bottom: 10px;
+.form-group {
+  margin-bottom: 15px;
 }
-button {
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+}
+.login-button {
+  padding: 10px 20px;
   background-color: #42b983;
   color: white;
   border: none;
-  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.login-button:hover {
+  background-color: #358a62;
 }
 </style>

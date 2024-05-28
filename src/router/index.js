@@ -4,17 +4,39 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Profile from '../views/Profile.vue';
 import CreateTask from '../views/CreateTask.vue';
+import Calendar from '../views/Calendar.vue';
+
 
 const routes = [
-  { path: '/', component: Home },
-  { path: '/login', component: Login },
-  { path: '/register', component: Register },
-  { path: '/profile', component: Profile },
-  { path: '/create-task', component: CreateTask }
+  {
+    path: '/',
+    name: 'Home',
+    component: Home
+  },
+ {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
+  },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    component: Calendar
+  },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(process.env.BASE_URL),
   routes
 });
 

@@ -16,6 +16,12 @@ export default {
 </script>
 
 <style>
+
+body {
+  margin: 0;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  background-color: #34495E;
+}
 nav {
   margin-bottom: 20px;
 }
