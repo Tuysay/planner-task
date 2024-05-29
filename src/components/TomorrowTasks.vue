@@ -1,6 +1,6 @@
 
 <template>
-  <div>
+  <div class="task-list">
     <div class="task-item" v-for="(task, index) in tasks" :key="index" :style="{ backgroundColor: task.color }">
       <span>{{ task.title }}</span>
       <span>{{ task.count }}</span>
@@ -10,44 +10,42 @@
 
 <script>
 export default {
-  props: ['tasks']
+  props: ['tasks'],
+  data() {
+    return {
+
+      tomorrowTasks: [
+        { title: 'ЗАВТРА', count: '0', color: '#3498DB' },
+        // Добавьте другие задачи в этом месяце
+      ]
+
+    };
+  }
+
 };
 </script>
 
 <style scoped>
 .task-list {
-  padding: 10px;
-  background-color: #34495E;
-  height: calc(100vh - 50px);
+  padding: 20px;
+  //background-color: #34495E;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 10px; /* Расстояние между задачами */
 }
 .task-item {
   display: flex;
   justify-content: space-between;
-  color: white;
-  padding: 15px;
-  margin-bottom: 5px;
-  border-radius: 5px;
-}
-.fab-container {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: auto;
-}
-.fab {
-  background-color: #FF6B6B;
-  border: none;
-  border-radius: 50%;
-  color: white;
-  font-size: 24px;
-  width: 50px;
-  height: 50px;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  color: white;
+  padding: 15px 20px;
+  margin-bottom: -25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.task-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
 }
 </style>
