@@ -1,38 +1,89 @@
 
 <template>
+  <div>
+    <nav class="navbar">
+       <span v-if="!isAuthenticated">
+        <router-link to="/" class="navbar-item">Главная</router-link>
+
+        </span>
+    </nav>
+  </div>
   <div class="login">
+
     <h1>Вход</h1>
     <form @submit.prevent="login">
       <div class="form-group">
-        <label for="username">Логин:</label>
-        <input type="text" id="username" v-model="username" required>
+        <label for="email">Email:</label>
+        <input type="email" v-model="email" placeholder="email" required>
       </div>
       <div class="form-group">
         <label for="password">Пароль:</label>
         <input type="password" id="password" v-model="password" required>
       </div>
-      <button type="submit" @click="toMain" class="login-button">Войти</button>
+      <button type="submit">Login</button>
     </form>
   </div>
 </template>
 
 <script>
+import { thisUrl } from "@/utils/api";
+
 export default {
-  name: 'Login',
   data() {
     return {
-      username: '',
-      password: ''
+      email: '',
+      password: "",
+
     };
   },
   methods: {
-    login() {
-      // Логика входа будет добавлена позже
-      console.log('Вход выполнен');
-      // this.$router.push("/");
+    async login() {
+      try {
+        const url = thisUrl() + "/login";
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password,
+          }),
+        });
+
+        if (response.ok) {
+          const userToken = await response.json();
+          localStorage.setItem("userToken", userToken.data.user_token);
+          this.$router.push("/");
+        } else {
+          if (response.status === 401) {
+            this.error = "Неправильный логин или пароль";
+          } else {
+            this.error = "Ошибка входа";
+          }
+          this.email = "";
+          this.password = "";
+          this.errors = true;
+          setTimeout(() => {
+            this.errors = false;
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Ошибка:", error);
+        this.error = "Ошибка входа";
+        this.email = "";
+        this.password = "";
+        this.errors = true;
+        setTimeout(() => {
+          this.errors = false;
+        }, 3000);
+      }
+
     },
-    toMain() {
-      this.$router.push("/");
+    computed: {
+      isAuthenticated() {
+        return !!localStorage.getItem('userToken');
+      }
     },
   },
 
@@ -68,5 +119,21 @@ input {
 }
 .login-button:hover {
   background-color: #358a62;
+}
+
+
+.navbar {
+  display: flex;
+  justify-content: center;
+  background-color: #2C3E50;
+  padding: 10px;
+}
+.navbar-item {
+  color: orange;
+  margin: 0 10px;
+  text-decoration: none;
+}
+.navbar-item:hover {
+  text-decoration: underline;
 }
 </style>

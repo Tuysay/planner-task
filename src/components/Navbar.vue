@@ -1,16 +1,39 @@
 <template>
-  <nav class="navbar">
-    <router-link to="/login" class="navbar-item">Вход</router-link>
-    <router-link to="/register" class="navbar-item">Регистрация</router-link>
-    <router-link to="/profile" class="navbar-item">Профиль</router-link>
-    <router-link to="/calendar" class="navbar-item">Календарь</router-link>
-  </nav>
+  <div>
+    <nav class="navbar">
+       <span v-if="!isAuthenticated">
+        <router-link to="/login" class="navbar-item">Вход</router-link>
+        <router-link to="/register" class="navbar-item">Регистрация</router-link>
+        </span>
+      <span v-if="isAuthenticated">
+      <router-link to="/profile" class="navbar-item">Профиль</router-link>
+      <router-link to="/calendar" class="navbar-item">Календарь</router-link>
+        <router-link to="/" @click="logout">Sign out</router-link>
+        </span>
+    </nav>
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'Navbar'
+  name: 'Navbar',
+  methods: {
+    logout() {
+      localStorage.removeItem('userToken');
+      this.$router.push('/');
+      location.reload();
+    }
+
+  },
+  computed: {
+    isAuthenticated() {
+      return !!localStorage.getItem('userToken');
+    }
+},
+
+
 };
+
 </script>
 
 <style scoped>

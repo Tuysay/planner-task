@@ -1,8 +1,8 @@
 <template>
   <div id="app" :style="appStyle">
-    <Navbar />
+<!--    <Navbar />-->
     <router-view />
-    <button @click="toggleTheme" class="theme-button">Сменить стиль</button> <!-- Добавили кнопку смены стиля -->
+    <button @click="toggleTheme" class="theme-button">Сменить стиль</button>
   </div>
 </template>
 
@@ -15,7 +15,7 @@ export default {
   },
   data() {
     return {
-      darkTheme: false // Устанавливаем начальное значение как светлая тема
+      darkTheme: false
     };
   },
   computed: {

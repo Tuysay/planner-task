@@ -14,22 +14,22 @@ const routes = [
   },
  {
     path: '/login',
-    name: 'Login',
+    name: 'login',
     component: Login
   },
   {
     path: '/register',
-    name: 'Register',
+    name: 'register',
     component: Register
   },
   {
     path: '/profile',
-    name: 'Profile',
+    name: 'profile',
     component: Profile
   },
   {
     path: '/calendar',
-    name: 'Calendar',
+    name: 'calendar',
     component: Calendar
   },
 ];
