@@ -58,7 +58,9 @@ export default {
 
         if (response.ok) {
           const userToken = await response.json();
-          localStorage.setItem("userToken", userToken.data.user_token);
+          localStorage.setItem("userToken", userToken.data.token);
+          console.log(userToken)
+          localStorage.setItem("userEmail", this.email); // Сохранение email в localStorage
           this.$router.push("/");
         } else {
           if (response.status === 401) {
@@ -93,6 +95,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .login {

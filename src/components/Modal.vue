@@ -5,7 +5,7 @@
       <form @submit.prevent="submit">
         <div class="form-group">
           <label for="task-title">Название задачи</label>
-          <input type="text" id="task-title" v-model="desks.name" required />
+          <input type="text" id="task-title" v-model="name" required />
         </div>
         <button type="submit" class="btn-save">Сохранить</button>
         <button type="button" class="btn-cancel" @click="close">Отмена</button>
@@ -14,7 +14,9 @@
   </div>
 </template>
 
-<script>
+<script>import { thisUrl } from "@/utils/api";
+
+
 export default {
   name: 'Modal',
   props: {
@@ -22,43 +24,45 @@ export default {
   },
   data() {
     return {
-      desks: {
         name: ''
-      }
     };
   },
   methods: {
     close() {
       this.$emit('close');
     },
-    submit() {
-      const taskData = {
-        name: this.desks.name
-      };
+    async submit() {
 
-      fetch('/desks/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('userToken')}`
-        },
-        body: JSON.stringify(taskData)
-      })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('Task saved:', data);
-            this.close();
-          })
-          .catch(error => {
-            console.error('Error saving task:', error);
-          });
+
+      try {
+        const url = thisUrl() + "/desks/create";
+        const userToken = localStorage.getItem('userToken');
+        if (!userToken) {
+          console.error('User token not found');
+          throw new Error('User token not found');
+        }
+
+        const response = await fetch( url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          },
+          body: JSON.stringify({
+            name: this.name
+
+          }),
+        });
+        console.log(response);
+
+
+
+        this.close();
+      } catch (error) {
+        console.error('Error saving desks:', error);
+      }
+    },
     }
-  }
 };
 </script>
 

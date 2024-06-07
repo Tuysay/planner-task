@@ -80,6 +80,10 @@ export default {
         });
 
         if (response.ok) {
+          // Save the name and email in localStorage
+          localStorage.setItem('userName', this.name);
+          localStorage.setItem('userEmail', this.email);
+
           this.$router.push("/login");
         } else {
           const data = await response.json();
@@ -103,7 +107,7 @@ export default {
     isAuthenticated() {
       return !!localStorage.getItem('userToken');
     }
-  },
+  }
 };
 </script>
 

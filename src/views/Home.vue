@@ -1,4 +1,4 @@
-<!--Home.vue-->
+<!-- Home.vue -->
 <template>
   <div>
     <nav class="navbar">
@@ -10,23 +10,24 @@
         <router-link to="/profile" class="navbar-item">Профиль</router-link>
         <router-link to="/calendar" class="navbar-item">Календарь</router-link>
         <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
+        <span class="navbar-item">{{ userEmail }}</span> <!-- Отображение email пользователя -->
       </span>
     </nav>
     <div>
       <span v-if="!isAuthenticated">
-      <TodayTasks :tasks="todayTasks" />
-      <TomorrowTasks :tasks="tomorrowTasks" />
-      <ThisWeekTasks :tasks="thisWeekTasks" />
-      <ThisMonthTasks :tasks="thisMonthTasks" />
-      <LaterTasks :tasks="laterTasks" />
-         </span>
+        <TodayTasks :tasks="todayTasks" />
+        <TomorrowTasks :tasks="tomorrowTasks" />
+        <ThisWeekTasks :tasks="thisWeekTasks" />
+        <ThisMonthTasks :tasks="thisMonthTasks" />
+        <LaterTasks :tasks="laterTasks" />
+      </span>
     </div>
     <div>
       <span v-if="isAuthenticated">
-      <p class="poprob">
-        Пока что у вас нет доск и задач, попробуйте добавить их!
-      </p>
-        </span>
+        <p class="poprob">
+          Пока что у вас нет доск и задач, попробуйте добавить их!
+        </p>
+      </span>
     </div>
     <ButtonAdd @click="showModal = true" v-if="isAuthenticated" />
     <Modal v-if="showModal" @close="showModal = false" />
@@ -77,16 +78,20 @@ export default {
       ]
     };
   },
-  methods: {
-    logout() {
-      localStorage.removeItem('userToken');
-      this.$router.push('/');
-      location.reload();
-    }
-  },
   computed: {
     isAuthenticated() {
       return !!localStorage.getItem('userToken');
+    },
+    userEmail() {
+      return localStorage.getItem('userEmail');
+    }
+  },
+  methods: {
+    logout() {
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('userEmail'); // Удаление email из localStorage при выходе
+      this.$router.push('/');
+      location.reload();
     }
   }
 };
@@ -109,11 +114,9 @@ export default {
 }
 .poprob {
   color: orange;
-
   text-decoration: none;
   font-size: 36px;
   margin-top: 5%;
   margin-left: 5%;
 }
-
 </style>
