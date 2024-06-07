@@ -1,27 +1,36 @@
+<!--Home.vue-->
 <template>
   <div>
     <nav class="navbar">
-       <span v-if="!isAuthenticated">
+      <span v-if="!isAuthenticated">
         <router-link to="/login" class="navbar-item">Вход</router-link>
         <router-link to="/register" class="navbar-item">Регистрация</router-link>
-        </span>
-      <span v-if="isAuthenticated">
-      <router-link to="/profile" class="navbar-item">Профиль</router-link>
-      <router-link to="/calendar" class="navbar-item">Календарь</router-link>
-        <router-link to="/" @click="logout">Sign out</router-link>
-        </span>
+      </span>
+      <span v-else>
+        <router-link to="/profile" class="navbar-item">Профиль</router-link>
+        <router-link to="/calendar" class="navbar-item">Календарь</router-link>
+        <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
+      </span>
     </nav>
-  </div>
     <div>
-      <TodayTasks :tasks="todayTasks"></TodayTasks>
-      <TomorrowTasks :tasks="tomorrowTasks"></TomorrowTasks>
-      <ThisWeekTasks :tasks="thisWeekTasks"></ThisWeekTasks>
-      <ThisMonthTasks :tasks="thisMonthTasks"></ThisMonthTasks>
-      <LaterTasks :tasks="laterTasks"></LaterTasks>
+      <span v-if="!isAuthenticated">
+      <TodayTasks :tasks="todayTasks" />
+      <TomorrowTasks :tasks="tomorrowTasks" />
+      <ThisWeekTasks :tasks="thisWeekTasks" />
+      <ThisMonthTasks :tasks="thisMonthTasks" />
+      <LaterTasks :tasks="laterTasks" />
+         </span>
     </div>
-  <ButtonAdd  @click="showModal = true" />
-  <Modal v-if="showModal" @close="showModal = false" />
-
+    <div>
+      <span v-if="isAuthenticated">
+      <p class="poprob">
+        Пока что у вас нет доск и задач, попробуйте добавить их!
+      </p>
+        </span>
+    </div>
+    <ButtonAdd @click="showModal = true" v-if="isAuthenticated" />
+    <Modal v-if="showModal" @close="showModal = false" />
+  </div>
 </template>
 
 <script>
@@ -30,37 +39,36 @@ import TomorrowTasks from '@/components/TomorrowTasks.vue';
 import ThisWeekTasks from '@/components/ThisWeekTasks.vue';
 import ThisMonthTasks from '@/components/ThisMonthTasks.vue';
 import LaterTasks from '@/components/LaterTasks.vue';
-import ButtonAdd from "@/components/ButtonAdd.vue";
-import Modal from '../components/Modal.vue';
+import ButtonAdd from '@/components/ButtonAdd.vue';
+import Modal from '@/components/Modal.vue';
 
 export default {
   components: {
-    ButtonAdd,
     TodayTasks,
     TomorrowTasks,
     ThisWeekTasks,
     ThisMonthTasks,
     LaterTasks,
+    ButtonAdd,
     Modal
   },
   data() {
     return {
       showModal: false,
-
       todayTasks: [
-        { title: 'СЕГОДНЯ', count: '0', color: '#2ECC71' },
+        { title: 'СЕГОДНЯ', count: '0', color: '#2ECC71' }
         // Добавьте другие задачи для сегодня
       ],
       tomorrowTasks: [
-        { title: 'ЗАВТРА', count: '0', color: '#3498DB' },
+        { title: 'ЗАВТРА', count: '0', color: '#3498DB' }
         // Добавьте другие задачи для завтра
       ],
       thisWeekTasks: [
-        { title: 'НА НЕДЕЛЕ', count: '0', color: '#6495ED' },
+        { title: 'НА НЕДЕЛЕ', count: '0', color: '#6495ED' }
         // Добавьте другие задачи на неделе
       ],
       thisMonthTasks: [
-        { title: 'В ЭТОМ МЕСЯЦЕ', count: '0', color: '#7B68EE' },
+        { title: 'В ЭТОМ МЕСЯЦЕ', count: '0', color: '#7B68EE' }
         // Добавьте другие задачи в этом месяце
       ],
       laterTasks: [
@@ -75,13 +83,12 @@ export default {
       this.$router.push('/');
       location.reload();
     }
-
   },
   computed: {
     isAuthenticated() {
       return !!localStorage.getItem('userToken');
     }
-  },
+  }
 };
 </script>
 
@@ -99,6 +106,14 @@ export default {
 }
 .navbar-item:hover {
   text-decoration: underline;
+}
+.poprob {
+  color: orange;
+
+  text-decoration: none;
+  font-size: 36px;
+  margin-top: 5%;
+  margin-left: 5%;
 }
 
 </style>

@@ -5,15 +5,7 @@
       <form @submit.prevent="submit">
         <div class="form-group">
           <label for="task-title">Название задачи</label>
-          <input type="text" id="task-title" v-model="task.title" required />
-        </div>
-        <div class="form-group">
-          <label for="subtask">Подзадачи</label>
-          <input type="text" id="subtask" v-model="task.subtask" required />
-        </div>
-        <div class="form-group">
-          <label for="date">Дата</label>
-          <input type="date" id="date" v-model="task.date" required />
+          <input type="text" id="task-title" v-model="desks.name" required />
         </div>
         <button type="submit" class="btn-save">Сохранить</button>
         <button type="button" class="btn-cancel" @click="close">Отмена</button>
@@ -30,10 +22,8 @@ export default {
   },
   data() {
     return {
-      task: {
-        title: '',
-        subtask: '',
-        date: ''
+      desks: {
+        name: ''
       }
     };
   },
@@ -42,16 +32,38 @@ export default {
       this.$emit('close');
     },
     submit() {
-      // Temporary logging the task, can be replaced with actual logic
-      console.log(this.task);
-      this.close();
+      const taskData = {
+        name: this.desks.name
+      };
+
+      fetch('/desks/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('userToken')}`
+        },
+        body: JSON.stringify(taskData)
+      })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Task saved:', data);
+            this.close();
+          })
+          .catch(error => {
+            console.error('Error saving task:', error);
+          });
     }
   }
 };
 </script>
 
 <style scoped>
-.modal-content h2{
+.modal-content h2 {
   color: white;
 }
 .modal-overlay {

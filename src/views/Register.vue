@@ -1,79 +1,103 @@
 <template>
   <div>
     <nav class="navbar">
-       <span v-if="!isAuthenticated">
+      <span v-if="!isAuthenticated">
         <router-link to="/" class="navbar-item">Главная</router-link>
-
-        </span>
+      </span>
     </nav>
-  </div>
-  <div class="register">
-
-    <h1>Регистрация</h1>
-    <form @submit.prevent="register">
-      <div class="form-group">
-        <label for="name">Логин:</label>
-        <input type="text" v-model="name" required>
-      </div>
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" v-model="email" placeholder="email" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Пароль:</label>
-        <input type="password" v-model="password" placeholder="Password" minlength="6" required>
-      </div>
-      <button type="submit"  class="register-button">Зарегистрироваться</button>
-      <button @click="toMain">Back</button>
-    </form>
+    <div class="register">
+      <h1>Регистрация</h1>
+      <form @submit.prevent="register">
+        <div class="form-group">
+          <label for="name">Логин:</label>
+          <input type="text" v-model="name" minlength="4" required>
+          <div v-if="errors.name" class="error-message">{{ errors.name }}</div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" v-model="email" placeholder="email" required>
+          <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль:</label>
+          <input type="password" v-model="password" placeholder="Password" minlength="8" required>
+          <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
+        </div>
+        <div class="form-group">
+          <label for="avatar">Фото профиля:</label>
+          <input type="file" @change="onFileChange">
+          <div v-if="errors.avatar" class="error-message">{{ errors.avatar }}</div>
+        </div>
+        <button type="submit" class="register-button" :disabled="loading">
+          <span v-if="loading" class="loader"></span>
+          <span v-else>Зарегистрироваться</span>
+        </button>
+        <div v-if="error" class="error-message">{{ error }}</div>
+      </form>
+    </div>
   </div>
 </template>
 
 <script>
-import {thisUrl} from "@/utils/api";
+import { thisUrl } from "@/utils/api";
+
 export default {
   name: 'Register',
   data() {
     return {
       name: '',
       email: '',
-      password: ''
+      password: '',
+      avatar: null,
+      loading: false,
+      error: null,
+      errors: {}, // Объект для хранения ошибок валидации
     };
   },
   methods: {
+    onFileChange(e) {
+      this.avatar = e.target.files[0];
+    },
     async register() {
+      this.loading = true;
+      this.error = null;
+      this.errors = {};
+
       try {
         const url = thisUrl() + "/registration";
+        const formData = new FormData();
+        formData.append('name', this.name);
+        formData.append('email', this.email);
+        formData.append('password', this.password);
+        formData.append('avatar', this.avatar || '');
+
         const response = await fetch(url, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Accept": "application/json",
           },
-          body: JSON.stringify({
-            name: this.name,
-            email: this.email,
-            password: this.password
-          })
+          body: formData,
         });
 
-
+        if (response.ok) {
+          this.$router.push("/login");
+        } else {
+          const data = await response.json();
+          if (response.status === 409) {
+            this.errors.email = "Такая почта уже была зарегистрирована";
+          } else if (response.status === 422 && data.errors) {
+            this.errors = data.errors; // Получаем ошибки валидации с сервера
+          } else {
+            this.error = "Ошибка регистрации";
+          }
+        }
       } catch (error) {
-        console.error('Ошибка:', error);
-        this.error = 'Ошибка регистрации';
-        this.fio = ''
-        this.email = ''
-        this.password = ''
-        this.errors = true;
-        setTimeout(() => {
-          this.errors = false;
-        }, 3000);
+        console.error("Ошибка:", error);
+        this.error = "Ошибка регистрации";
       } finally {
         this.loading = false;
       }
     },
-    toMain() {
-      this.$router.push('/');
-    }
   },
   computed: {
     isAuthenticated() {
@@ -108,11 +132,38 @@ input {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.register-button:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
 }
 .register-button:hover {
   background-color: #358a62;
 }
-
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+.loader {
+  border: 4px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 20px;
+  height: 20px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .navbar {
   display: flex;
   justify-content: center;

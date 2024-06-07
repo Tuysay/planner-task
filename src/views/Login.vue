@@ -1,27 +1,28 @@
-
 <template>
   <div>
     <nav class="navbar">
-       <span v-if="!isAuthenticated">
+      <span v-if="!isAuthenticated">
         <router-link to="/" class="navbar-item">Главная</router-link>
-
-        </span>
+      </span>
     </nav>
-  </div>
-  <div class="login">
-
-    <h1>Вход</h1>
-    <form @submit.prevent="login">
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" v-model="email" placeholder="email" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" v-model="password" required>
-      </div>
-      <button type="submit">Login</button>
-    </form>
+    <div class="login">
+      <h1>Вход</h1>
+      <form @submit.prevent="login">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" v-model="email" placeholder="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль:</label>
+          <input type="password" id="password" v-model="password" minlength="8" required>
+        </div>
+        <button type="submit" class="login-button" :disabled="loading">
+          <span v-if="loading" class="loader"></span>
+          <span v-else>Войти</span>
+        </button>
+        <div v-if="error" class="error-message">{{ error }}</div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -32,12 +33,16 @@ export default {
   data() {
     return {
       email: '',
-      password: "",
-
+      password: '',
+      loading: false,
+      error: null,
     };
   },
   methods: {
     async login() {
+      this.loading = true;
+      this.error = null;
+
       try {
         const url = thisUrl() + "/login";
         const response = await fetch(url, {
@@ -58,36 +63,34 @@ export default {
         } else {
           if (response.status === 401) {
             this.error = "Неправильный логин или пароль";
+          } else if (response.status === 409) {
+            this.error = "Пользователь с таким email уже существует";
           } else {
             this.error = "Ошибка входа";
           }
-          this.email = "";
-          this.password = "";
-          this.errors = true;
-          setTimeout(() => {
-            this.errors = false;
-          }, 3000);
+          this.resetForm();
         }
       } catch (error) {
         console.error("Ошибка:", error);
         this.error = "Ошибка входа";
-        this.email = "";
-        this.password = "";
-        this.errors = true;
-        setTimeout(() => {
-          this.errors = false;
-        }, 3000);
+        this.resetForm();
+      } finally {
+        this.loading = false;
       }
-
     },
-    computed: {
-      isAuthenticated() {
-        return !!localStorage.getItem('userToken');
-      }
+    resetForm() {
+      this.email = "";
+      this.password = "";
+      setTimeout(() => {
+        this.error = null;
+      }, 3000);
     },
   },
-
-
+  computed: {
+    isAuthenticated() {
+      return !!localStorage.getItem('userToken');
+    }
+  },
 };
 </script>
 
@@ -116,12 +119,38 @@ input {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-button:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
 }
 .login-button:hover {
   background-color: #358a62;
 }
-
-
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+.loader {
+  border: 4px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 20px;
+  height: 20px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .navbar {
   display: flex;
   justify-content: center;
