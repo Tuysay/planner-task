@@ -1,4 +1,3 @@
-<!-- Home.vue -->
 <template>
   <div>
     <nav class="navbar">
@@ -10,27 +9,23 @@
         <router-link to="/profile" class="navbar-item">Профиль</router-link>
         <router-link to="/calendar" class="navbar-item">Календарь</router-link>
         <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
-        <span class="navbar-item">{{ userEmail }}</span> <!-- Отображение email пользователя -->
+        <span class="navbar-item">{{ userEmail }}</span>
       </span>
     </nav>
-    <div>
-      <span v-if="!isAuthenticated">
-        <TodayTasks :tasks="todayTasks" />
-        <TomorrowTasks :tasks="tomorrowTasks" />
-        <ThisWeekTasks :tasks="thisWeekTasks" />
-        <ThisMonthTasks :tasks="thisMonthTasks" />
-        <LaterTasks :tasks="laterTasks" />
-      </span>
-    </div>
-    <div>
-      <span v-if="isAuthenticated">
-        <p class="poprob">
-          Пока что у вас нет доск и задач, попробуйте добавить их!
-        </p>
-      </span>
+    <div v-if="isAuthenticated" class="desks-container">
+      <div v-if="desks.length === 0">
+        <p class="poprob">Пока что у вас нет досок и задач, попробуйте добавить их!</p>
+      </div>
+      <div v-else class="desks-wrapper">
+        <div v-for="desk in desks" :key="desk.id" class="desk-column">
+          <h3>{{ desk.name }}</h3>
+          <button @click="openEditModal(desk)" class="edit-button">Изменить</button>
+        </div>
+      </div>
     </div>
     <ButtonAdd @click="showModal = true" v-if="isAuthenticated" />
-    <Modal v-if="showModal" @close="showModal = false" />
+    <Modal v-if="showModal" @close="showModal = false" @task-created="fetchDesks" />
+    <EditModal v-if="showEditModal" :desk="selectedDesk" @close="closeEditModal" @desk-updated="fetchDesks" />
   </div>
 </template>
 
@@ -42,6 +37,8 @@ import ThisMonthTasks from '@/components/ThisMonthTasks.vue';
 import LaterTasks from '@/components/LaterTasks.vue';
 import ButtonAdd from '@/components/ButtonAdd.vue';
 import Modal from '@/components/Modal.vue';
+import EditModal from '@/components/EditModal.vue';
+import { thisUrl } from '@/utils/api';
 
 export default {
   components: {
@@ -51,31 +48,15 @@ export default {
     ThisMonthTasks,
     LaterTasks,
     ButtonAdd,
-    Modal
+    Modal,
+    EditModal
   },
   data() {
     return {
       showModal: false,
-      todayTasks: [
-        { title: 'СЕГОДНЯ', count: '0', color: '#2ECC71' }
-        // Добавьте другие задачи для сегодня
-      ],
-      tomorrowTasks: [
-        { title: 'ЗАВТРА', count: '0', color: '#3498DB' }
-        // Добавьте другие задачи для завтра
-      ],
-      thisWeekTasks: [
-        { title: 'НА НЕДЕЛЕ', count: '0', color: '#6495ED' }
-        // Добавьте другие задачи на неделе
-      ],
-      thisMonthTasks: [
-        { title: 'В ЭТОМ МЕСЯЦЕ', count: '0', color: '#7B68EE' }
-        // Добавьте другие задачи в этом месяце
-      ],
-      laterTasks: [
-        { title: 'ПОТОМ', count: '0', color: '#9B59B6' }
-        // Добавьте другие задачи на будущее
-      ]
+      showEditModal: false,
+      desks: [],
+      selectedDesk: null
     };
   },
   computed: {
@@ -89,9 +70,44 @@ export default {
   methods: {
     logout() {
       localStorage.removeItem('userToken');
-      localStorage.removeItem('userEmail'); // Удаление email из localStorage при выходе
+      localStorage.removeItem('userEmail');
       this.$router.push('/');
       location.reload();
+    },
+    async fetchDesks() {
+      try {
+        const url = thisUrl() + "/desks";
+        const userToken = localStorage.getItem('userToken');
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched desks:', data);
+          this.desks = data.data.desks;
+        } else {
+          console.error('Error fetching desks:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching desks:', error);
+      }
+    },
+    openEditModal(desk) {
+      this.selectedDesk = desk;
+      this.showEditModal = true;
+    },
+    closeEditModal() {
+      this.selectedDesk = null;
+      this.showEditModal = false;
+    }
+  },
+  created() {
+    if (this.isAuthenticated) {
+      this.fetchDesks();
     }
   }
 };
@@ -119,4 +135,60 @@ export default {
   margin-top: 5%;
   margin-left: 5%;
 }
+.desks-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 20px;
+}
+.desks-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+}
+.desk-column {
+  background-color: #008B8B;
+  border: 1px solid #2C3E50;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  color: white;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.desk-column:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.desk-column h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #ECF0F1;
+}
+.edit-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #2980B9;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.edit-button:hover {
+  background-color: #1F618D;
+}
 </style>
+
+
+
+
+<!--#008B8B-->

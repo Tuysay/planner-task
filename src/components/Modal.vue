@@ -14,8 +14,8 @@
   </div>
 </template>
 
-<script>import { thisUrl } from "@/utils/api";
-
+<script>
+import { thisUrl } from "@/utils/api";
 
 export default {
   name: 'Modal',
@@ -24,7 +24,7 @@ export default {
   },
   data() {
     return {
-        name: ''
+      name: ''
     };
   },
   methods: {
@@ -32,8 +32,6 @@ export default {
       this.$emit('close');
     },
     async submit() {
-
-
       try {
         const url = thisUrl() + "/desks/create";
         const userToken = localStorage.getItem('userToken');
@@ -42,27 +40,27 @@ export default {
           throw new Error('User token not found');
         }
 
-        const response = await fetch( url, {
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${userToken}`
           },
-          body: JSON.stringify({
-            name: this.name
-
-          }),
+          body: JSON.stringify({ name: this.name }),
         });
-        console.log(response);
 
-
-
-        this.close();
+        if (response.ok) {
+          await response.json();
+          this.$emit('task-created'); // Отправка события для обновления списка досок
+          this.close();
+        } else {
+          console.error('Error creating task:', response.statusText);
+        }
       } catch (error) {
         console.error('Error saving desks:', error);
       }
     },
-    }
+  }
 };
 </script>
 
@@ -83,33 +81,33 @@ export default {
   z-index: 1000;
 }
 .modal-content {
-  background: #696969; /* Изменено на черный */
+  background: #696969;
   padding: 20px;
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
 }
 .form-group {
-  margin-bottom: 20px; /* Увеличили отступ для улучшения визуального восприятия */
+  margin-bottom: 20px;
 }
 .form-group label {
   display: block;
-  margin-bottom: 8px; /* Уменьшили отступ между меткой и полем ввода */
-  color: #FFFAFA; /* Изменили цвет текста меток на белый */
+  margin-bottom: 8px;
+  color: #FFFAFA;
 }
 .form-group input {
   width: 100%;
-  padding: 10px; /* Увеличили отступы вокруг текста в полях ввода */
+  padding: 10px;
   box-sizing: border-box;
-  border: 1px solid #ccc; /* Добавили рамку для поля ввода */
-  border-radius: 10px; /* Закруглили углы поля ввода */
-  background-color: #808080; /* Изменили цвет фона поля ввода */
-  color: white; /* Изменили цвет текста в полях ввода на белый */
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #808080;
+  color: white;
 }
 .btn-save {
   background-color: #2F4F4F;
   color: white;
-  padding: 12px 20px; /* Увеличили отступы кнопок для лучшей акцентации */
+  padding: 12px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -117,7 +115,7 @@ export default {
 .btn-cancel {
   background-color: #A52A2A;
   color: white;
-  padding: 12px 20px; /* Увеличили отступы кнопок для лучшей акцентации */
+  padding: 12px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
