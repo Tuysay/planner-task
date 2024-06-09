@@ -46,7 +46,7 @@ export default {
           },
           body: JSON.stringify({
             name: this.name,
-            color: this.color
+
           })
         });
 

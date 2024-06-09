@@ -2,6 +2,7 @@
   <div>
     <nav class="navbar">
       <span v-if="!isAuthenticated">
+
         <router-link to="/login" class="navbar-item">Вход</router-link>
         <router-link to="/register" class="navbar-item">Регистрация</router-link>
       </span>
@@ -12,6 +13,10 @@
         <span class="navbar-item">{{ userEmail }}</span>
       </span>
     </nav>
+    <!-- Приветственное сообщение -->
+    <div class="welcome-message" v-if="!isAuthenticated">
+      <p>Добро пожаловать! Зарегистрируйтесь или войдите, чтобы начать использовать наше приложение.</p>
+    </div>
     <div v-if="isAuthenticated" class="desks-container">
       <div v-if="desks.length === 0">
         <p class="poprob">Пока что у вас нет досок и задач, попробуйте добавить их!</p>
@@ -30,11 +35,6 @@
 </template>
 
 <script>
-import TodayTasks from '@/components/TodayTasks.vue';
-import TomorrowTasks from '@/components/TomorrowTasks.vue';
-import ThisWeekTasks from '@/components/ThisWeekTasks.vue';
-import ThisMonthTasks from '@/components/ThisMonthTasks.vue';
-import LaterTasks from '@/components/LaterTasks.vue';
 import ButtonAdd from '@/components/ButtonAdd.vue';
 import Modal from '@/components/Modal.vue';
 import EditModal from '@/components/EditModal.vue';
@@ -42,11 +42,6 @@ import { thisUrl } from '@/utils/api';
 
 export default {
   components: {
-    TodayTasks,
-    TomorrowTasks,
-    ThisWeekTasks,
-    ThisMonthTasks,
-    LaterTasks,
     ButtonAdd,
     Modal,
     EditModal
@@ -185,6 +180,14 @@ export default {
 }
 .edit-button:hover {
   background-color: #1F618D;
+}
+
+.welcome-message {
+  color: orange;
+  text-decoration: none;
+  font-size: 36px;
+  margin-top: 5%;
+  margin-left: 5%;
 }
 </style>
 
