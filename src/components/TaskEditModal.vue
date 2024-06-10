@@ -1,7 +1,8 @@
+<!-- TaskEditModal.vue -->
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
-      <h2>Добавить доску</h2>
+      <h2>Редактировать задачу</h2>
       <form @submit.prevent="submit">
         <div class="form-group">
           <label for="task-title">Название задачи</label>
@@ -18,13 +19,13 @@
 import { thisUrl } from "@/utils/api";
 
 export default {
-  name: 'Modal',
+  name: 'TaskEditModal',
   props: {
-    show: Boolean
+    task: Object
   },
   data() {
     return {
-      name: ''
+      name: this.task.name
     };
   },
   methods: {
@@ -33,7 +34,7 @@ export default {
     },
     async submit() {
       try {
-        const url = thisUrl() + "/desks/create";
+        const url = thisUrl() + `/tasks/${this.task.id}/update`;
         const userToken = localStorage.getItem('userToken');
         if (!userToken) {
           console.error('User token not found');
@@ -41,7 +42,7 @@ export default {
         }
 
         const response = await fetch(url, {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${userToken}`
@@ -51,74 +52,74 @@ export default {
 
         if (response.ok) {
           await response.json();
-          this.$emit('task-created'); // Отправка события для обновления списка досок
+          this.$emit('task-updated'); // Отправка события для обновления списка задач
           this.close();
         } else {
-          console.error('Error creating task:', response.statusText);
+          console.error('Error updating task:', response.statusText);
         }
       } catch (error) {
-        console.error('Error saving desks:', error);
+        console.error('Error updating task:', error);
       }
-    },
+    }
   }
 };
 </script>
 
 <style scoped>
-.modal-content h2 {
-  color: white;
-}
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
 }
 .modal-content {
-  background: #696969;
+  background-color: #fff;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;
-  max-width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
 }
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
-.form-group label {
+label {
   display: block;
-  margin-bottom: 8px;
-  color: #FFFAFA;
+  margin-bottom: 5px;
 }
-.form-group input {
+input[type="text"] {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #808080;
-  color: white;
 }
 .btn-save {
-  background-color: #2F4F4F;
-  color: white;
-  padding: 12px 20px;
+  background-color: #2980B9;
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-save:hover {
+  background-color: #1F618D;
 }
 .btn-cancel {
-  background-color: #A52A2A;
-  color: white;
-  padding: 12px 20px;
+  background-color: #e74c3c;
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s;
   margin-left: 10px;
+}
+.btn-cancel:hover {
+  background-color: #c0392b;
 }
 </style>

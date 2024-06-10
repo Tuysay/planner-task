@@ -101,7 +101,7 @@ export default {
 }
 
 .modal-content {
-  background: #2C3E50;
+  background: #696969;
   padding: 20px;
   border-radius: 8px;
   width: 400px;
@@ -125,11 +125,11 @@ export default {
 
 .form-group input[type="text"],
 .form-group input[type="color"] {
-  width: 100%;
+  width: 95%;
   padding: 8px;
   border: 1px solid #34495E;
   border-radius: 4px;
-  background: #34495E;
+  background: #808080;
   color: #ECF0F1;
 }
 

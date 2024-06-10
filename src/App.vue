@@ -15,14 +15,14 @@ export default {
   },
   data() {
     return {
-      darkTheme: false
+      darkTheme: true
     };
   },
   computed: {
     appStyle() {
       return {
-        backgroundColor: this.darkTheme ? '#34495E' : '#FFFAFA', // Фоновый цвет в зависимости от темы
-        color: this.darkTheme ? '#FFFAFA' : '#34495E' // Цвет текста в зависимости от темы
+        backgroundColor: this.darkTheme ? '#34495E' : '#D3D3D3', // Фоновый цвет в зависимости от темы
+        color: this.darkTheme ? '#D3D3D3' : '#34495E' // Цвет текста в зависимости от темы
       };
     }
   },
@@ -42,7 +42,7 @@ export default {
       if (this.darkTheme) {
         document.body.style.backgroundColor = '#34495E'; // Изменяем фон body при переключении темы
       } else {
-        document.body.style.backgroundColor = '#FFFAFA';
+        document.body.style.backgroundColor = '#D3D3D3';
       }
       // Сохраняем значение в localStorage при изменении темы
       localStorage.setItem('darkTheme', JSON.stringify(this.darkTheme));
@@ -55,7 +55,7 @@ export default {
 body {
   margin: 0;
   font-family: Avenir, Helvetica, Arial, sans-serif;
-  background-color: #FFFAFA; /* Устанавливаем фон body по умолчанию */
+  background-color: #D3D3D3; /* Устанавливаем фон body по умолчанию */
 }
 nav {
   margin-bottom: 20px;

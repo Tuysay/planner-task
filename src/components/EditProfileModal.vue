@@ -65,39 +65,65 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.75); /* Darker background */
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px; /* Add some padding for smaller screens */
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 5px;
-  width: 90%;
-  max-width: 500px;
+  background: #696969; /* Dark background for modal */
+  padding: 30px;
+  border-radius: 10px; /* Increased border radius */
+  width: 100%;
+  max-width: 400px; /* Reduced max width */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Softer shadow */
+  color: #ffffff; /* White text color */
+  font-family: 'Montserrat', sans-serif; /* Changed font */
+}
+
+h2 {
+  font-size: 1.8em; /* Slightly smaller font size */
+  font-weight: 600;
+  margin-bottom: 20px; /* More space below heading */
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Increased margin between form groups */
 }
 
 label {
   display: block;
-  margin-bottom: 5px;
+  font-weight: 600; /* Bold labels */
+  margin-bottom: 8px; /* Increased margin below labels */
 }
 
 input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
+  width: 95%;
+  padding: 12px; /* Increased padding */
+  font-size: 1em; /* Standardized font size */
+  border: 2px solid #ccc;
+  border-radius: 5px; /* Standard border radius */
+  background: #808080; /* Dark background for input */
+  color: #ffffff; /* White text color for input */
+}
+
+input[type="text"]::placeholder {
+  color: #aaaaaa; /* Light grey placeholder text */
+}
+
+input[type="text"]:focus {
+  border-color: #42b983; /* Highlighted border color */
+  outline: none; /* Remove outline */
 }
 
 .buttons {
@@ -111,6 +137,8 @@ input[type="text"] {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth background transition */
+  font-weight: 600; /* Bold text */
 }
 
 .btn-save {
@@ -119,8 +147,8 @@ input[type="text"] {
 }
 
 .btn-cancel {
-  background-color: #ccc;
-  color: black;
+  background-color: #d9534f; /* Red color for cancel button */
+  color: white;
 }
 
 .btn-save:hover {
@@ -128,6 +156,6 @@ input[type="text"] {
 }
 
 .btn-cancel:hover {
-  background-color: #999;
+  background-color: #c9302c; /* Darker red on hover */
 }
 </style>

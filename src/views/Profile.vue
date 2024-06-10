@@ -2,17 +2,20 @@
   <div>
     <nav class="navbar">
       <span v-if="!isAuthenticated">
+
         <router-link to="/login" class="navbar-item">Вход</router-link>
         <router-link to="/register" class="navbar-item">Регистрация</router-link>
       </span>
-      <span v-if="isAuthenticated">
-        <router-link to="/" class="navbar-item">Главная</router-link>
+      <span v-else>
+         <router-link to="/" class="navbar-item">Главная</router-link>
+        <router-link to="/profile" class="navbar-item">Профиль</router-link>
         <router-link to="/calendar" class="navbar-item">Календарь</router-link>
-        <router-link to="/" @click="logout">Sign out</router-link>
+        <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
       </span>
     </nav>
     <div class="profile">
       <h1>Профиль</h1>
+      <span v-if="isAuthenticated">
       <div class="profile-info">
 <!--        <img :src="users.avatar" alt="User Avatar" class="avatar">-->
         <div class="details">
@@ -21,6 +24,7 @@
           <button @click="openEditModal" class="edit-button">Изменить</button>
         </div>
       </div>
+         </span>
       <EditProfileModal
           v-if="isEditModalOpen"
           :user="users"

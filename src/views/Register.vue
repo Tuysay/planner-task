@@ -5,41 +5,42 @@
         <router-link to="/" class="navbar-item">Главная</router-link>
       </span>
     </nav>
-    <div class="register">
-      <h1>Регистрация</h1>
-      <form @submit.prevent="register">
-        <div class="form-group">
-          <label for="name">Логин:</label>
-          <input type="text" v-model="name" minlength="4" required>
-          <div v-if="errors.name" class="error-message">{{ errors.name }}</div>
+    <div class="container">
+      <div class="animated-border">
+        <div class="register">
+          <h2>Регистрация</h2>
+          <form @submit.prevent="register">
+            <div class="inputBx">
+              <input type="text" v-model="name" placeholder="Логин" minlength="4" required>
+              <div v-if="errors.name" class="error-message">{{ errors.name }}</div>
+            </div>
+            <div class="inputBx">
+              <input type="email" v-model="email" placeholder="Email" required>
+              <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
+            </div>
+            <div class="inputBx">
+              <input type="password" v-model="password" placeholder="Password" minlength="8" required>
+              <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
+            </div>
+            <div class="inputBx">
+              <input type="file" @change="onFileChange">
+              <div v-if="errors.avatar" class="error-message">{{ errors.avatar }}</div>
+            </div>
+            <div class="inputBx">
+              <input type="submit" value="Зарегистрироваться" class="register-button" :disabled="loading">
+            </div>
+            <div v-if="loading" class="loader"></div>
+            <div v-if="error" class="error-message">{{ error }}</div>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="email">Email:</label>
-          <input type="email" v-model="email" placeholder="email" required>
-          <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
-        </div>
-        <div class="form-group">
-          <label for="password">Пароль:</label>
-          <input type="password" v-model="password" placeholder="Password" minlength="8" required>
-          <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
-        </div>
-        <div class="form-group">
-          <label for="avatar">Фото профиля:</label>
-          <input type="file" @change="onFileChange">
-          <div v-if="errors.avatar" class="error-message">{{ errors.avatar }}</div>
-        </div>
-        <button type="submit" class="register-button" :disabled="loading">
-          <span v-if="loading" class="loader"></span>
-          <span v-else>Зарегистрироваться</span>
-        </button>
-        <div v-if="error" class="error-message">{{ error }}</div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { thisUrl } from "@/utils/api";
+
 
 export default {
   name: 'Register',
@@ -112,45 +113,95 @@ export default {
 </script>
 
 <style scoped>
-.register {
-  padding: 20px;
-  max-width: 400px;
-  margin: 0 auto;
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
 }
-.form-group {
-  margin-bottom: 15px;
-}
-label {
-  display: block;
-  margin-bottom: 5px;
-}
-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-}
-.register-button {
-  padding: 10px 20px;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+
+body {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #111;
 }
-.register-button:disabled {
-  background-color: #a5d6a7;
-  cursor: not-allowed;
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
-.register-button:hover {
-  background-color: #358a62;
+
+.animated-border {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
+
+
+.register {
+  position: relative;
+  width: 300px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.register h2 {
+  font-size: 2em;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.inputBx {
+  position: relative;
+  width: 100%;
+  margin-bottom: 15px; /* Отступ между полями */
+}
+
+.inputBx input {
+  position: relative;
+  width: 100%;
+  padding: 12px 20px;
+  background: transparent;
+  border: 2px solid #fff;
+  border-radius: 40px;
+  font-size: 1.2em;
+  color: #fff;
+  box-shadow: none;
+  outline: none;
+}
+
+.inputBx input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.inputBx input[type="submit"] {
+  background: linear-gradient(45deg, #3549ff, #72deff);
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 5px;
+}
+
 .error-message {
   color: red;
   margin-top: 10px;
 }
+
 .loader {
   border: 4px solid #f3f3f3;
   border-radius: 50%;
@@ -160,25 +211,30 @@ input {
   -webkit-animation: spin 2s linear infinite; /* Safari */
   animation: spin 2s linear infinite;
 }
+
 @-webkit-keyframes spin {
   0% { -webkit-transform: rotate(0deg); }
   100% { -webkit-transform: rotate(360deg); }
 }
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
 .navbar {
   display: flex;
   justify-content: center;
   background-color: #2C3E50;
   padding: 10px;
 }
+
 .navbar-item {
   color: orange;
   margin: 0 10px;
   text-decoration: none;
 }
+
 .navbar-item:hover {
   text-decoration: underline;
 }
