@@ -1,4 +1,4 @@
-<!-- MainComponent.vue -->
+MainComponent.vue -->
 <template>
   <div>
     <nav class="navbar">
@@ -28,18 +28,30 @@
             <button @click="openEditModal(desk)" class="edit-button">Изменить</button>
           </div>
           <ul class="task-list">
-            <li v-for="task in desk.task" :key="task.id">
-              {{ task.name }} - {{ task.date }}
-            </li>
+            <li v-for="task in desk.tasks" :key="task.id">{{ task.name }}</li>
           </ul>
-          <button @click="openTaskModal(desk.id)" class="add-task-button">Добавить задачу</button>
+        </div>
+      </div>
+    </div>
+    <ButtonAdd @click="openTaskModal" v-if="isAuthenticated" class="add-button" />
+    <Modal v-if="showModal" :deskId="selectedDeskId" @close="showModal = false" @task-created="fetchDesks" />
+    <EditModal v-if="showEditModal" :desk="selectedDesk" @close="closeEditModal" @desk-updated="fetchDesks" />
+    <div v-if="isAuthenticated" class="tasks-container">
+      <div v-if="tasks.length === 0">
+        <p class="poprob">Пока что у вас нет задач, попробуйте добавить их!</p>
+      </div>
+      <div v-else class="tasks-wrapper">
+        <div v-for="task in tasks" :key="task.id" class="task-column">
+          <div class="task-header">
+            <h3>{{ task.name }}</h3>
+            <button @click="openTaskEditModal(task)" class="edit-button">Изменить</button>
+          </div>
         </div>
       </div>
     </div>
     <ButtonAdd @click="openTaskCreateModal" v-if="isAuthenticated" />
-    <Modal v-if="showModal" @close="showModal = false" @desk-created="fetchDesks" />
-    <EditModal v-if="showEditModal" :desk="selectedDesk" @close="closeEditModal" @desk-updated="fetchDesks" />
-    <TaskModal v-if="showTaskModal" :deskId="selectedDeskId" @close="showTaskModal = false" @task-created="fetchTasks" />
+    <TaskModal v-if="showTaskModal" @close="showTaskModal = false" @task-created="fetchTasks" />
+    <TaskEditModal v-if="showTaskEditModal" :task="selectedTask" @close="closeTaskEditModal" @task-updated="fetchTasks" />
   </div>
 </template>
 
@@ -47,7 +59,8 @@
 import ButtonAdd from '@/components/ButtonAdd.vue';
 import Modal from '@/components/Modal.vue';
 import EditModal from '@/components/EditModal.vue';
-import TaskModal from '@/components/TaskModal.vue';
+import TaskModal from '@/components/TaskModal.vue';  // Новый компонент для задач
+import TaskEditModal from '@/components/TaskEditModal.vue';  // Новый компонент для редактирования задач
 
 import { thisUrl } from '@/utils/api';
 
@@ -56,17 +69,20 @@ export default {
     ButtonAdd,
     Modal,
     EditModal,
-    TaskModal,
+    TaskModal, // Новый компонент
+    TaskEditModal, // Новый компонент
   },
   data() {
     return {
       showModal: false,
       showEditModal: false,
-      showTaskModal: false,
       desks: [],
-      tasks: [],
       selectedDesk: null,
       selectedDeskId: null,
+      showTaskModal: false,
+      showTaskEditModal: false,
+      tasks: [],
+      selectedTask: null,
     };
   },
   computed: {
@@ -98,33 +114,7 @@ export default {
         if (response.ok) {
           const data = await response.json();
           console.log('Fetched desks:', data);
-          console.log('Fetched desks:', this.desks);
-
           this.desks = data.data.desks;
-        } else {
-          console.error('Error fetching desks:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching desks:', error);
-      }
-    },
-    async fetchTasks() {
-      try {
-        const url = thisUrl() + "/tasks";
-        const userToken = localStorage.getItem('userToken');
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Fetched desks:', data);
-          console.log('Fetched tasks:', this.tasks);
-
-          this.desks = data.data.tasks;
         } else {
           console.error('Error fetching desks:', response.statusText);
         }
@@ -140,9 +130,39 @@ export default {
       this.selectedDesk = null;
       this.showEditModal = false;
     },
-    openTaskModal(deskId) {
-      this.selectedDeskId = deskId;
-      this.showTaskModal = true;
+    openTaskModal() {
+      this.selectedDeskId = null;
+      this.showModal = true;
+    },
+    async fetchTasks() {
+      try {
+        const url = thisUrl() + "/tasks";
+        const userToken = localStorage.getItem('userToken');
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched tasks:', data);
+          this.tasks = data.data.tasks;
+        } else {
+          console.error('Error fetching tasks:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    },
+    openTaskEditModal(task) {
+      this.selectedTask = task;
+      this.showTaskEditModal = true;
+    },
+    closeTaskEditModal() {
+      this.selectedTask = null;
+      this.showTaskEditModal = false;
     },
     openTaskCreateModal() {
       this.showTaskModal = true;
@@ -151,11 +171,11 @@ export default {
   created() {
     if (this.isAuthenticated) {
       this.fetchDesks();
+      this.fetchTasks();
     }
   }
 };
 </script>
-
 <style scoped>
 .navbar {
   display: flex;
@@ -163,14 +183,17 @@ export default {
   background-color: #2C3E50;
   padding: 10px;
 }
+
 .navbar-item {
   color: orange;
   margin: 0 10px;
   text-decoration: none;
 }
+
 .navbar-item:hover {
   text-decoration: underline;
 }
+
 .poprob {
   color: orange;
   text-decoration: none;
@@ -178,6 +201,7 @@ export default {
   margin-top: 5%;
   margin-left: 5%;
 }
+
 .desks-container {
   display: flex;
   justify-content: center;
@@ -185,6 +209,7 @@ export default {
   flex-direction: column;
   padding: 20px;
 }
+
 .desks-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -193,6 +218,7 @@ export default {
   width: 100%;
   max-width: 1200px;
 }
+
 .desk-column {
   background-color: #fff;
   border: 1px solid #ddd;
@@ -205,20 +231,24 @@ export default {
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
 }
+
 .desk-column:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 .desk-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .desk-column h3 {
   margin: 0;
   font-size: 20px;
   color: #333;
 }
+
 .edit-button {
   background-color: transparent;
   border: 1px solid #2980B9;
@@ -228,22 +258,27 @@ export default {
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
+
 .edit-button:hover {
   background-color: #2980B9;
   color: white;
 }
+
 .task-list {
   list-style: none;
   padding: 0;
   margin-top: 10px;
 }
+
 .task-list li {
   padding: 5px 0;
   border-bottom: 1px solid #ddd;
 }
+
 .task-list li:last-child {
   border-bottom: none;
 }
+
 .welcome-message {
   color: orange;
   text-decoration: none;
@@ -251,6 +286,7 @@ export default {
   margin-top: 5%;
   margin-left: 5%;
 }
+
 .add-button {
   position: fixed;
   bottom: 20px;
@@ -269,63 +305,9 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s, box-shadow 0.3s;
 }
+
 .add-button:hover {
   background-color: #800000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-
-.tasks-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  padding: 20px;
-}
-.tasks-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  width: 100%;
-  max-width: 1200px;
-}
-.task-column {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-  color: #333;
-  text-align: left;
-  transition: transform 0.2s, box-shadow 0.2s;
-  position: relative;
-}
-.task-column:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-.task-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.task-header h3 {
-  margin: 0;
-  font-size: 20px;
-}
-.edit-button, .add-task-button {
-  background-color: #2980B9;
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.edit-button:hover, .add-task-button:hover {
-  background-color: #1F618D;
 }
 </style>
