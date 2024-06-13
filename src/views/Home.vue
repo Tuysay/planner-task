@@ -1,4 +1,3 @@
-MainComponent.vue -->
 <template>
   <div>
     <nav class="navbar">
@@ -28,30 +27,18 @@ MainComponent.vue -->
             <button @click="openEditModal(desk)" class="edit-button">Изменить</button>
           </div>
           <ul class="task-list">
+            <li v-if="desk.tasks.length === 0">Задач нет</li>
             <li v-for="task in desk.tasks" :key="task.id">{{ task.name }}</li>
           </ul>
+          <TaskCreateButton @click="openTaskModal(desk.id)" />
         </div>
       </div>
     </div>
-    <ButtonAdd @click="openTaskModal" v-if="isAuthenticated" class="add-button" />
+    <ButtonAdd @click="openTaskModal(null)" v-if="isAuthenticated" class="add-button" />
     <Modal v-if="showModal" :deskId="selectedDeskId" @close="showModal = false" @task-created="fetchDesks" />
     <EditModal v-if="showEditModal" :desk="selectedDesk" @close="closeEditModal" @desk-updated="fetchDesks" />
-    <div v-if="isAuthenticated" class="tasks-container">
-      <div v-if="tasks.length === 0">
-        <p class="poprob">Пока что у вас нет задач, попробуйте добавить их!</p>
-      </div>
-      <div v-else class="tasks-wrapper">
-        <div v-for="task in tasks" :key="task.id" class="task-column">
-          <div class="task-header">
-            <h3>{{ task.name }}</h3>
-            <button @click="openTaskEditModal(task)" class="edit-button">Изменить</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <ButtonAdd @click="openTaskCreateModal" v-if="isAuthenticated" />
-    <TaskModal v-if="showTaskModal" @close="showTaskModal = false" @task-created="fetchTasks" />
-    <TaskEditModal v-if="showTaskEditModal" :task="selectedTask" @close="closeTaskEditModal" @task-updated="fetchTasks" />
+    <TaskModal v-if="showTaskModal" :deskId="selectedDeskId" @close="showTaskModal = false" @task-created="fetchDesks" />
+    <TaskEditModal v-if="showTaskEditModal" :task="selectedTask" @close="closeTaskEditModal" @task-updated="fetchDesks" />
   </div>
 </template>
 
@@ -59,9 +46,9 @@ MainComponent.vue -->
 import ButtonAdd from '@/components/ButtonAdd.vue';
 import Modal from '@/components/Modal.vue';
 import EditModal from '@/components/EditModal.vue';
-import TaskModal from '@/components/TaskModal.vue';  // Новый компонент для задач
-import TaskEditModal from '@/components/TaskEditModal.vue';  // Новый компонент для редактирования задач
-
+import TaskModal from '@/components/TaskModal.vue';
+import TaskEditModal from '@/components/TaskEditModal.vue';
+import TaskCreateButton from '@/components/TaskCreateButton.vue';
 import { thisUrl } from '@/utils/api';
 
 export default {
@@ -69,8 +56,9 @@ export default {
     ButtonAdd,
     Modal,
     EditModal,
-    TaskModal, // Новый компонент
-    TaskEditModal, // Новый компонент
+    TaskModal,
+    TaskEditModal,
+    TaskCreateButton,
   },
   data() {
     return {
@@ -81,7 +69,6 @@ export default {
       selectedDeskId: null,
       showTaskModal: false,
       showTaskEditModal: false,
-      tasks: [],
       selectedTask: null,
     };
   },
@@ -114,25 +101,17 @@ export default {
         if (response.ok) {
           const data = await response.json();
           console.log('Fetched desks:', data);
-          this.desks = data.data.desks;
+          this.desks = data.data.desks.map(desk => ({
+            ...desk,
+            tasks: []
+          }));
+          this.fetchTasks();
         } else {
           console.error('Error fetching desks:', response.statusText);
         }
       } catch (error) {
         console.error('Error fetching desks:', error);
       }
-    },
-    openEditModal(desk) {
-      this.selectedDesk = desk;
-      this.showEditModal = true;
-    },
-    closeEditModal() {
-      this.selectedDesk = null;
-      this.showEditModal = false;
-    },
-    openTaskModal() {
-      this.selectedDeskId = null;
-      this.showModal = true;
     },
     async fetchTasks() {
       try {
@@ -148,13 +127,33 @@ export default {
         if (response.ok) {
           const data = await response.json();
           console.log('Fetched tasks:', data);
-          this.tasks = data.data.tasks;
+          this.assignTasksToDesks(data.data.tasks);
         } else {
           console.error('Error fetching tasks:', response.statusText);
         }
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
+    },
+    assignTasksToDesks(tasks) {
+      tasks.forEach(task => {
+        const desk = this.desks.find(d => d.id === task.desk_id);
+        if (desk) {
+          desk.tasks.push(task);
+        }
+      });
+    },
+    openEditModal(desk) {
+      this.selectedDesk = desk;
+      this.showEditModal = true;
+    },
+    closeEditModal() {
+      this.selectedDesk = null;
+      this.showEditModal = false;
+    },
+    openTaskModal(deskId) {
+      this.selectedDeskId = deskId;
+      this.showTaskModal = true;
     },
     openTaskEditModal(task) {
       this.selectedTask = task;
@@ -171,11 +170,11 @@ export default {
   created() {
     if (this.isAuthenticated) {
       this.fetchDesks();
-      this.fetchTasks();
     }
   }
 };
 </script>
+
 <style scoped>
 .navbar {
   display: flex;
