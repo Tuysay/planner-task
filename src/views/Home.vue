@@ -28,17 +28,18 @@
           </div>
           <ul class="task-list">
             <li v-if="desk.tasks.length === 0">Задач нет</li>
-            <li v-for="task in desk.tasks" :key="task.id">{{ task.name }}</li>
+            <li v-for="task in desk.tasks" :key="task.id" @click="openTaskDetailModal(task)">{{ task.name }}</li>
           </ul>
           <TaskCreateButton @click="openTaskModal(desk.id)" />
         </div>
       </div>
     </div>
-    <ButtonAdd @click="openTaskModal(null)" v-if="isAuthenticated" class="add-button" />
+    <ButtonAdd @click="openModal" v-if="isAuthenticated" class="add-button" />
     <Modal v-if="showModal" :deskId="selectedDeskId" @close="showModal = false" @task-created="fetchDesks" />
     <EditModal v-if="showEditModal" :desk="selectedDesk" @close="closeEditModal" @desk-updated="fetchDesks" />
     <TaskModal v-if="showTaskModal" :deskId="selectedDeskId" @close="showTaskModal = false" @task-created="fetchDesks" />
     <TaskEditModal v-if="showTaskEditModal" :task="selectedTask" @close="closeTaskEditModal" @task-updated="fetchDesks" />
+    <TaskDetailModal v-if="showTaskDetailModal" :task="selectedTask" @close="closeTaskDetailModal" />
   </div>
 </template>
 
@@ -48,6 +49,7 @@ import Modal from '@/components/Modal.vue';
 import EditModal from '@/components/EditModal.vue';
 import TaskModal from '@/components/TaskModal.vue';
 import TaskEditModal from '@/components/TaskEditModal.vue';
+import TaskDetailModal from '@/components/TaskDetailModal.vue';
 import TaskCreateButton from '@/components/TaskCreateButton.vue';
 import { thisUrl } from '@/utils/api';
 
@@ -58,6 +60,7 @@ export default {
     EditModal,
     TaskModal,
     TaskEditModal,
+    TaskDetailModal,
     TaskCreateButton,
   },
   data() {
@@ -69,6 +72,7 @@ export default {
       selectedDeskId: null,
       showTaskModal: false,
       showTaskEditModal: false,
+      showTaskDetailModal: false,
       selectedTask: null,
     };
   },
@@ -155,6 +159,14 @@ export default {
       this.selectedDeskId = deskId;
       this.showTaskModal = true;
     },
+    openTaskDetailModal(task) {
+      this.selectedTask = task;
+      this.showTaskDetailModal = true;
+    },
+    closeTaskDetailModal() {
+      this.selectedTask = null;
+      this.showTaskDetailModal = false;
+    },
     openTaskEditModal(task) {
       this.selectedTask = task;
       this.showTaskEditModal = true;
@@ -163,8 +175,8 @@ export default {
       this.selectedTask = null;
       this.showTaskEditModal = false;
     },
-    openTaskCreateModal() {
-      this.showTaskModal = true;
+    openModal() {
+      this.showModal = true;
     }
   },
   created() {

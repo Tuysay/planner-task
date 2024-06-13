@@ -8,8 +8,16 @@
           <input type="text" id="task-title" v-model="name" required />
         </div>
         <div class="form-group">
-          <label for="task-date">Дата выполнения</label>
+          <label for="task-date">Дата начала</label>
           <input type="date" id="task-date" v-model="date" required />
+        </div>
+<!--        <div class="form-group">-->
+<!--          <label for="task-completed-date">Дата завершения</label>-->
+<!--          <input type="number" id="task-completed-date" v-model="expired" />-->
+<!--        </div>-->
+        <div class="form-group">
+          <label for="task-img">Изображение (необязательно)</label>
+          <input type="file" id="task-img" @change="onImageChange" />
         </div>
         <button type="submit" class="btn-save">Сохранить</button>
         <button type="button" class="btn-cancel" @click="close">Отмена</button>
@@ -29,12 +37,17 @@ export default {
   data() {
     return {
       name: '',
-      date: ''  // Добавлено поле даты
+      date: '',  // Дата начала
+      // expired: '',  // Дата завершения
+      img: null  // Изображение
     };
   },
   methods: {
     close() {
       this.$emit('close');
+    },
+    onImageChange(event) {
+      this.img = event.target.files[0];
     },
     async submit() {
       try {
@@ -50,13 +63,21 @@ export default {
           throw new Error('User token not found');
         }
 
+        const formData = new FormData();
+        formData.append('name', this.name);
+        formData.append('date', this.date);
+        // formData.append('completed_date', this.expired);
+        formData.append('desk_id', this.deskId);
+        if (this.img) {
+          formData.append('img', this.img);
+        }
+
         const response = await fetch(url, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${userToken}`
           },
-          body: JSON.stringify({name: this.name, date: this.date, desk_id: this.deskId}),  // Добавлена дата в тело запроса
+          body: formData
         });
 
         if (response.ok) {
