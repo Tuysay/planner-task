@@ -11,7 +11,7 @@
           <h2>Регистрация</h2>
           <form @submit.prevent="register">
             <div class="inputBx">
-              <input type="text" v-model="name" placeholder="Логин" minlength="4" required>
+              <input type="text" v-model="name" placeholder="Логин" minlength="4" maxlength="255" required>
               <div v-if="errors.name" class="error-message">{{ errors.name }}</div>
             </div>
             <div class="inputBx">
@@ -19,7 +19,7 @@
               <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
             </div>
             <div class="inputBx">
-              <input type="password" v-model="password" placeholder="Password" minlength="8" required>
+              <input type="password" v-model="password" placeholder="Password" minlength="8" maxlength="25" required>
               <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
             </div>
             <div class="inputBx">
@@ -40,7 +40,6 @@
 
 <script>
 import { thisUrl } from "@/utils/api";
-
 
 export default {
   name: 'Register',
@@ -74,17 +73,15 @@ export default {
 
         const response = await fetch(url, {
           method: "POST",
-          headers: {
-            "Accept": "application/json",
-          },
           body: formData,
         });
 
         if (response.ok) {
-          // Save the name and email in localStorage
-          localStorage.setItem('userName', this.name);
-          localStorage.setItem('userEmail', this.email);
-
+          // Сброс формы и переход на страницу входа
+          this.name = '';
+          this.email = '';
+          this.password = '';
+          this.avatar = null;
           this.$router.push("/login");
         } else {
           const data = await response.json();

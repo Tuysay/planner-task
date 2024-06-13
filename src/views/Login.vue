@@ -18,7 +18,7 @@
               <input type="email" v-model="email" placeholder="Email" required>
             </div>
             <div class="inputBx">
-              <input type="password" id="password" v-model="password" placeholder="Пароль" minlength="8" required>
+              <input type="password" id="password" v-model="password" placeholder="Пароль" minlength="8" maxlength="12" required>
             </div>
             <div class="inputBx">
               <input type="submit" value="Войти" class="login-button" :disabled="loading">

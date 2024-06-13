@@ -11,6 +11,14 @@
           <strong>Дата начала:</strong>
           <input type="date" v-model="editableTask.date" />
         </p>
+        <p v-if="imageError">
+          <strong>Ошибка загрузки изображения:</strong>
+          <span>{{ imageError }}</span>
+        </p>
+        <p v-if="imageUrl && !imageError">
+          <strong>Изображение:</strong><br>
+          <img :src="imageUrl" alt="Task Image" class="task-image" />
+        </p>
         <div class="button-group">
           <button class="btn-save" @click="saveChanges">Сохранить</button>
           <button class="btn-delete" @click="deleteTask">Удалить</button>
@@ -33,12 +41,38 @@ export default {
   },
   data() {
     return {
-      editableTask: { ...this.task }
+      editableTask: { ...this.task },
+      imageUrl: null,
+      imageError: null
     };
+  },
+  async created() {
+    if (this.task.id) {
+      this.imageUrl = await this.fetchTaskImage(this.task.id);
+    }
   },
   methods: {
     close() {
       this.$emit('close');
+    },
+    async fetchTaskImage(taskId) {
+      try {
+        const url = `${thisUrl()}/tasks/image/${taskId}`;
+        const response = await fetch(url);
+        if (response.ok) {
+          return response.url;
+        } else if (response.status === 404) {
+          this.imageError = 'Изображение не найдено';
+          return null;
+        } else {
+          this.imageError = 'Ошибка загрузки изображения';
+          return null;
+        }
+      } catch (error) {
+        console.error('Error fetching task image:', error);
+        this.imageError = 'Ошибка загрузки изображения';
+        return null;
+      }
     },
     async saveChanges() {
       try {
@@ -175,6 +209,14 @@ export default {
 .modal-content input[type="date"]:focus {
   border-color: #2980B9;
   outline: none;
+}
+
+.task-image {
+  max-width: 100%;
+  max-height: 150px;
+  margin-top: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 .button-group {

@@ -5,22 +5,22 @@
       <form @submit.prevent="submit">
         <div class="form-group">
           <label for="task-title">Название задачи</label>
-          <input type="text" id="task-title" v-model="name" required />
+          <input type="text" id="task-title" v-model="name" required class="input-field" />
         </div>
         <div class="form-group">
           <label for="task-date">Дата начала</label>
-          <input type="date" id="task-date" v-model="date" required />
+          <input type="date" id="task-date" v-model="date" required class="input-field" />
         </div>
-<!--        <div class="form-group">-->
-<!--          <label for="task-completed-date">Дата завершения</label>-->
-<!--          <input type="number" id="task-completed-date" v-model="expired" />-->
-<!--        </div>-->
-<!--        <div class="form-group">-->
-<!--          <label for="task-img">Изображение (необязательно)</label>-->
-<!--          <input type="file" id="task-img" @change="onImageChange" />-->
-<!--        </div>-->
-        <button type="submit" class="btn-save">Сохранить</button>
-        <button type="button" class="btn-cancel" @click="close">Отмена</button>
+        <div class="form-group">
+          <label for="task-img">Изображение (необязательно)</label>
+          <input type="file" id="task-img" @change="onImageChange" class="input-file" />
+        </div>
+        <div class="button-group">
+          <button type="submit" class="btn btn-save" :disabled="loading">
+            {{ loading ? 'Сохранение...' : 'Сохранить' }}
+          </button>
+          <button type="button" class="btn btn-cancel" @click="close">Отмена</button>
+        </div>
       </form>
     </div>
   </div>
@@ -37,9 +37,9 @@ export default {
   data() {
     return {
       name: '',
-      date: '',  // Дата начала
-      // expired: '',  // Дата завершения
-      img: null  // Изображение
+      date: '',
+      img: null,
+      loading: false
     };
   },
   methods: {
@@ -51,26 +51,21 @@ export default {
     },
     async submit() {
       try {
-        if (!this.deskId) {
-          console.error('deskId is not provided');
-          return;
-        }
+        this.loading = true;
 
         const url = `${thisUrl()}/tasks/create`;
         const userToken = localStorage.getItem('userToken');
         if (!userToken) {
-          console.error('User token not found');
           throw new Error('User token not found');
         }
 
         const formData = new FormData();
         formData.append('name', this.name);
         formData.append('date', this.date);
-        // formData.append('completed_date', this.expired);
         formData.append('desk_id', this.deskId);
-        // if (this.img) {
-        //   formData.append('img', this.img);
-        // }
+        if (this.img) {
+          formData.append('img', this.img);
+        }
 
         const response = await fetch(url, {
           method: 'POST',
@@ -83,14 +78,17 @@ export default {
         if (response.ok) {
           const responseData = await response.json();
           console.log('Task created:', responseData);
-          this.$emit('task-created'); // Отправка события для обновления списка задач
+          this.$emit('task-created');
           this.close();
         } else {
           const errorData = await response.json();
           console.error('Error creating task:', errorData);
+          // Handle error
         }
       } catch (error) {
         console.error('Error creating task:', error);
+      } finally {
+        this.loading = false;
       }
     }
   }
@@ -111,10 +109,18 @@ export default {
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .form-group {
@@ -124,31 +130,49 @@ export default {
 .form-group label {
   display: block;
   margin-bottom: 8px;
+  font-weight: bold;
 }
 
-.form-group input {
-  width: 100%;
+.input-field {
+  width: 95%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 1rem;
+}
+
+.input-file {
+  width: 95%;
+  padding: 8px;
+  font-size: 1rem;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
 .btn-save {
-  background-color: #2980B9;
+  background-color: #2980b9;
   color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  margin-right: 10px;
 }
 
 .btn-cancel {
-  background-color: #A52A2A;
+  background-color: #a52a2a;
   color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 10px;
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>

@@ -13,9 +13,9 @@ export default {
 <style scoped>
 .button-add {
   position: absolute; /* Изменено с relative на absolute */
-  margin-top: 20%;
-  top: 50%;
-  left: 50%;
+  margin-bottom: clamp(10%, 20%, 30%);
+  margin-top: 25%;
+  margin-left: 3%;
   transform: translate(-50%, -50%);
   background-color: #e74c3c;
   color: white;

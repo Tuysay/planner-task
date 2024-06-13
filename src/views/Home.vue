@@ -7,7 +7,6 @@
       </span>
       <span v-else>
         <router-link to="/profile" class="navbar-item">Профиль</router-link>
-        <router-link to="/calendar" class="navbar-item">Календарь</router-link>
         <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
         <span class="navbar-item">{{ userEmail }}</span>
       </span>
@@ -27,8 +26,8 @@
           </div>
           <ul class="task-list">
             <li v-if="desk.tasks.length === 0">Задач нет</li>
-            <li v-for="task in desk.tasks" :key="task.id" :class="{ completed: task.completed }">
-              <span @click="!task.completed && openTaskDetailModal(task)">{{ task.name }}</span>
+            <li v-for="task in desk.tasks" :key="task.id" :class="{ completed: task.completed }" @click="!task.completed && openTaskDetailModal(task)">
+              <span>{{ task.name }}</span>
               <button v-if="!task.completed" @click.stop="markAsCompleted(task)" class="complete-button">Выполнено</button>
               <button v-if="task.completed" @click.stop="markAsNotCompleted(task)" class="revert-button">Вернуть</button>
             </li>
@@ -241,7 +240,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .navbar {
   display: flex;
@@ -256,7 +254,6 @@ export default {
   text-decoration: none;
 }
 
-.navbar-item
 .navbar-item:hover {
   text-decoration: underline;
 }
@@ -343,6 +340,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .task-list li:last-child {
@@ -352,6 +350,11 @@ export default {
 .task-list li.completed {
   text-decoration: line-through;
   color: #888;
+}
+
+.task-list li:hover {
+  background-color: #f0f0f0;
+  color: #000;
 }
 
 .complete-button {
@@ -394,7 +397,7 @@ export default {
 
 .add-button {
   position: fixed;
-  bottom: 20px;
+  bottom: 10%;
   left: 50%;
   transform: translateX(-50%);
   background-color: #e74c3c;
@@ -415,4 +418,15 @@ export default {
   background-color: #800000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+.task-list li:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+.add-button {
+  position: fixed;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+}
 </style>
+
