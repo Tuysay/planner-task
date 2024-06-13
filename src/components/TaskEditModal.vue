@@ -34,7 +34,7 @@ export default {
     },
     async submit() {
       try {
-        const url = thisUrl() + `/tasks/${this.task.id}/update`;
+        const url = thisUrl() + `/tasks/edit/${this.task.id}`;
         const userToken = localStorage.getItem('userToken');
         if (!userToken) {
           console.error('User token not found');
@@ -42,7 +42,7 @@ export default {
         }
 
         const response = await fetch(url, {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${userToken}`

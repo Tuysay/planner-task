@@ -12,7 +12,6 @@
         <span class="navbar-item">{{ userEmail }}</span>
       </span>
     </nav>
-    <!-- Приветственное сообщение -->
     <div class="welcome-message" v-if="!isAuthenticated">
       <p>Добро пожаловать! Зарегистрируйтесь или войдите, чтобы начать использовать наше приложение.</p>
     </div>
@@ -24,11 +23,15 @@
         <div v-for="desk in desks" :key="desk.id" class="desk-column">
           <div class="desk-header">
             <h3>{{ desk.name }}</h3>
-            <button @click="openEditModal(desk)" class="edit-button">Изменить</button>
+            <button v-if="!desk.completed" @click="openEditModal(desk)" class="edit-button">Изменить</button>
           </div>
           <ul class="task-list">
             <li v-if="desk.tasks.length === 0">Задач нет</li>
-            <li v-for="task in desk.tasks" :key="task.id" @click="openTaskDetailModal(task)">{{ task.name }}</li>
+            <li v-for="task in desk.tasks" :key="task.id" :class="{ completed: task.completed }">
+              <span @click="!task.completed && openTaskDetailModal(task)">{{ task.name }}</span>
+              <button v-if="!task.completed" @click.stop="markAsCompleted(task)" class="complete-button">Выполнено</button>
+              <button v-if="task.completed" @click.stop="markAsNotCompleted(task)" class="revert-button">Вернуть</button>
+            </li>
           </ul>
           <TaskCreateButton @click="openTaskModal(desk.id)" />
         </div>
@@ -38,8 +41,7 @@
     <Modal v-if="showModal" :deskId="selectedDeskId" @close="showModal = false" @task-created="fetchDesks" />
     <EditModal v-if="showEditModal" :desk="selectedDesk" @close="closeEditModal" @desk-updated="fetchDesks" />
     <TaskModal v-if="showTaskModal" :deskId="selectedDeskId" @close="showTaskModal = false" @task-created="fetchDesks" />
-    <TaskEditModal v-if="showTaskEditModal" :task="selectedTask" @close="closeTaskEditModal" @task-updated="fetchDesks" />
-    <TaskDetailModal v-if="showTaskDetailModal" :task="selectedTask" @close="closeTaskDetailModal" />
+    <TaskDetailModal v-if="showTaskDetailModal" :task="selectedTask" @close="closeTaskDetailModal" @task-updated="handleTaskUpdated" @task-deleted="handleTaskDeleted" />
   </div>
 </template>
 
@@ -48,7 +50,6 @@ import ButtonAdd from '@/components/ButtonAdd.vue';
 import Modal from '@/components/Modal.vue';
 import EditModal from '@/components/EditModal.vue';
 import TaskModal from '@/components/TaskModal.vue';
-import TaskEditModal from '@/components/TaskEditModal.vue';
 import TaskDetailModal from '@/components/TaskDetailModal.vue';
 import TaskCreateButton from '@/components/TaskCreateButton.vue';
 import { thisUrl } from '@/utils/api';
@@ -59,7 +60,6 @@ export default {
     Modal,
     EditModal,
     TaskModal,
-    TaskEditModal,
     TaskDetailModal,
     TaskCreateButton,
   },
@@ -71,7 +71,6 @@ export default {
       selectedDesk: null,
       selectedDeskId: null,
       showTaskModal: false,
-      showTaskEditModal: false,
       showTaskDetailModal: false,
       selectedTask: null,
     };
@@ -147,6 +146,52 @@ export default {
         }
       });
     },
+    async markAsCompleted(task) {
+      try {
+        const url = `${thisUrl()}/tasks/edit/${task.id}`;
+        const userToken = localStorage.getItem('userToken');
+        const response = await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          },
+          body: JSON.stringify({ completed: true })
+        });
+        if (response.ok) {
+          task.completed = true;
+          console.log('Task marked as completed:', task);
+        } else {
+          const errorData = await response.json();
+          console.error('Error marking task as completed:', errorData);
+        }
+      } catch (error) {
+        console.error('Error marking task as completed:', error);
+      }
+    },
+    async markAsNotCompleted(task) {
+      try {
+        const url = `${thisUrl()}/tasks/edit/${task.id}`;
+        const userToken = localStorage.getItem('userToken');
+        const response = await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          },
+          body: JSON.stringify({ completed: false })
+        });
+        if (response.ok) {
+          task.completed = false;
+          console.log('Task marked as not completed:', task);
+        } else {
+          const errorData = await response.json();
+          console.error('Error marking task as not completed:', errorData);
+        }
+      } catch (error) {
+        console.error('Error marking task as not completed:', error);
+      }
+    },
     openEditModal(desk) {
       this.selectedDesk = desk;
       this.showEditModal = true;
@@ -167,13 +212,22 @@ export default {
       this.selectedTask = null;
       this.showTaskDetailModal = false;
     },
-    openTaskEditModal(task) {
-      this.selectedTask = task;
-      this.showTaskEditModal = true;
+    handleTaskUpdated(updatedTask) {
+      const desk = this.desks.find(d => d.id === updatedTask.desk_id);
+      if (desk) {
+        const taskIndex = desk.tasks.findIndex(task => task.id === updatedTask.id);
+        if (taskIndex !== -1) {
+          desk.tasks.splice(taskIndex, 1, updatedTask);
+        }
+      }
     },
-    closeTaskEditModal() {
-      this.selectedTask = null;
-      this.showTaskEditModal = false;
+    handleTaskDeleted(deletedTaskId) {
+      this.desks.forEach(desk => {
+        const taskIndex = desk.tasks.findIndex(task => task.id === deletedTaskId);
+        if (taskIndex !== -1) {
+          desk.tasks.splice(taskIndex, 1);
+        }
+      });
     },
     openModal() {
       this.showModal = true;
@@ -186,6 +240,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 .navbar {
@@ -201,6 +256,7 @@ export default {
   text-decoration: none;
 }
 
+.navbar-item
 .navbar-item:hover {
   text-decoration: underline;
 }
@@ -284,10 +340,48 @@ export default {
 .task-list li {
   padding: 5px 0;
   border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .task-list li:last-child {
   border-bottom: none;
+}
+
+.task-list li.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.complete-button {
+  background-color: #27ae60;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background-color 0.2s;
+}
+
+.complete-button:hover {
+  background-color: #219150;
+}
+
+.revert-button {
+  background-color: #e67e22;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background-color 0.2s;
+}
+
+.revert-button:hover {
+  background-color: #d35400;
 }
 
 .welcome-message {

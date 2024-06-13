@@ -15,10 +15,10 @@
 <!--          <label for="task-completed-date">Дата завершения</label>-->
 <!--          <input type="number" id="task-completed-date" v-model="expired" />-->
 <!--        </div>-->
-        <div class="form-group">
-          <label for="task-img">Изображение (необязательно)</label>
-          <input type="file" id="task-img" @change="onImageChange" />
-        </div>
+<!--        <div class="form-group">-->
+<!--          <label for="task-img">Изображение (необязательно)</label>-->
+<!--          <input type="file" id="task-img" @change="onImageChange" />-->
+<!--        </div>-->
         <button type="submit" class="btn-save">Сохранить</button>
         <button type="button" class="btn-cancel" @click="close">Отмена</button>
       </form>
@@ -68,9 +68,9 @@ export default {
         formData.append('date', this.date);
         // formData.append('completed_date', this.expired);
         formData.append('desk_id', this.deskId);
-        if (this.img) {
-          formData.append('img', this.img);
-        }
+        // if (this.img) {
+        //   formData.append('img', this.img);
+        // }
 
         const response = await fetch(url, {
           method: 'POST',
