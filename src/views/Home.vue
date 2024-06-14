@@ -19,7 +19,7 @@
         <p class="poprob">Пока что у вас нет досок и задач, попробуйте добавить их!</p>
       </div>
       <div v-else class="desks-wrapper">
-        <div v-for="desk in desks" :key="desk.id" class="desk-column">
+        <div v-for="desk in sortedDesks" :key="desk.id" class="desk-column">
           <div class="desk-header">
             <h3>{{ desk.name }}</h3>
             <button v-if="!desk.completed" @click="openEditModal(desk)" class="edit-button">Изменить</button>
@@ -29,9 +29,12 @@
             <li v-for="task in desk.tasks" :key="task.id" :class="{ completed: task.completed }" @click="!task.completed && openTaskDetailModal(task)">
               <span>{{ task.name }}</span>
               <button v-if="!task.completed" @click.stop="markAsCompleted(task)" class="complete-button">Выполнено</button>
-              <button v-if="task.completed" @click.stop="markAsNotCompleted(task)" class="revert-button">Вернуть</button>
+              <!--              <button v-if="task.completed" @click.stop="markAsNotCompleted(task)" class="revert-button">Вернуть</button>-->
             </li>
           </ul>
+          <div class="max-tasks-reached-message" v-if="maxTasksReachedDeskId === desk.id">
+            <p>Доска {{ desk.name }} уже содержит максимальное количество задач (5). Новая задача не может быть добавлена.</p>
+          </div>
           <TaskCreateButton @click="openTaskModal(desk.id)" />
         </div>
       </div>
@@ -72,6 +75,7 @@ export default {
       showTaskModal: false,
       showTaskDetailModal: false,
       selectedTask: null,
+      maxTasksReachedDeskId: null,
     };
   },
   computed: {
@@ -80,6 +84,14 @@ export default {
     },
     userEmail() {
       return localStorage.getItem('userEmail');
+    },
+    sortedDesks() {
+      return this.desks.map(desk => {
+        return {
+          ...desk,
+          tasks: desk.tasks.slice().sort((a, b) => a.completed - b.completed)
+        };
+      });
     }
   },
   methods: {
@@ -141,24 +153,34 @@ export default {
       tasks.forEach(task => {
         const desk = this.desks.find(d => d.id === task.desk_id);
         if (desk) {
-          desk.tasks.push(task);
+          // Check if the desk already has 7 tasks
+          if (desk.tasks.length < 5) {
+            desk.tasks.push(task);
+          } else {
+            this.maxTasksReachedDeskId = desk.id;
+            setTimeout(() => {
+              if (this.maxTasksReachedDeskId === desk.id) {
+                this.maxTasksReachedDeskId = null;
+              }
+            }, 5000); // Установите время, через которое сообщение должно исчезнуть (в миллисекундах)
+          }
         }
       });
     },
     async markAsCompleted(task) {
       try {
-        const url = `${thisUrl()}/tasks/edit/${task.id}`;
+        const url = `${thisUrl()}/tasks/complete/${task.id}`;
         const userToken = localStorage.getItem('userToken');
         const response = await fetch(url, {
-          method: 'PATCH',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${userToken}`
           },
-          body: JSON.stringify({ completed: true })
+          body: JSON.stringify({ completed: 1 })
         });
         if (response.ok) {
-          task.completed = true;
+          task.completed = 1;
           console.log('Task marked as completed:', task);
         } else {
           const errorData = await response.json();
@@ -168,29 +190,29 @@ export default {
         console.error('Error marking task as completed:', error);
       }
     },
-    async markAsNotCompleted(task) {
-      try {
-        const url = `${thisUrl()}/tasks/edit/${task.id}`;
-        const userToken = localStorage.getItem('userToken');
-        const response = await fetch(url, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
-          },
-          body: JSON.stringify({ completed: false })
-        });
-        if (response.ok) {
-          task.completed = false;
-          console.log('Task marked as not completed:', task);
-        } else {
-          const errorData = await response.json();
-          console.error('Error marking task as not completed:', errorData);
-        }
-      } catch (error) {
-        console.error('Error marking task as not completed:', error);
-      }
-    },
+    // async markAsNotCompleted(task) {
+    //   try {
+    //     const url = `${thisUrl()}/tasks/complete/${task.id}`;
+    //     const userToken = localStorage.getItem('userToken');
+    //     const response = await fetch(url, {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //         'Authorization': `Bearer ${userToken}`
+    //       },
+    //       body: JSON.stringify({ completed: 0 })
+    //     });
+    //     if (response.ok) {
+    //       task.completed = 0;
+    //       console.log('Task marked as not completed:', task);
+    //     } else {
+    //       const errorData = await response.json();
+    //       console.error('Error marking task as not completed:', errorData);
+    //     }
+    //   } catch (error) {
+    //     console.error('Error marking task as not completed:', error);
+    //   }
+    // },
     openEditModal(desk) {
       this.selectedDesk = desk;
       this.showEditModal = true;
@@ -427,6 +449,14 @@ export default {
   bottom: 10%;
   left: 50%;
   transform: translateX(-50%);
+}
+.max-tasks-reached-message {
+  background-color: #f2dede;
+  color: #a94442;
+  border: 1px solid #ebccd1;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 10px;
 }
 </style>
 

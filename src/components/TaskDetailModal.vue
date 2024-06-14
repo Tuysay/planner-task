@@ -5,11 +5,11 @@
       <div v-if="editableTask">
         <p>
           <strong>Название:</strong>
-          <input v-model="editableTask.name" />
+          <input v-model="editableTask.name" class="editable-field" />
         </p>
         <p>
-          <strong>Дата начала:</strong>
-          <input type="date" v-model="editableTask.date" />
+          <strong>Срок окончания задачи:</strong>
+          <input type="date" v-model="editableTask.date" class="editable-field" />
         </p>
         <p v-if="imageError">
           <strong>Ошибка загрузки изображения:</strong>
@@ -194,20 +194,20 @@ export default {
   margin-bottom: 15px;
 }
 
-.modal-content input[type="text"],
-.modal-content input[type="date"] {
+.editable-field {
+  border: none;
+  background-color: transparent;
+  color: #333;
   width: 100%;
-  padding: 10px;
   margin: 5px 0;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.3s;
+  padding: 5px;
+  font-size: 16px;
+  transition: border 0.3s, background-color 0.3s;
 }
 
-.modal-content input[type="text"]:focus,
-.modal-content input[type="date"]:focus {
-  border-color: #2980B9;
+.editable-field:focus {
+  border: 1px solid #2980B9;
+  background-color: #f9f9f9;
   outline: none;
 }
 
@@ -217,6 +217,12 @@ export default {
   margin-top: 10px;
   border-radius: 4px;
   border: 1px solid #ccc;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .button-group {

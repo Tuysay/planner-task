@@ -8,7 +8,6 @@
       <span v-else>
         <router-link to="/" class="navbar-item">Главная</router-link>
         <router-link to="/profile" class="navbar-item">Профиль</router-link>
-<!--        <router-link to="/calendar" class="navbar-item">Календарь</router-link>-->
         <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
       </span>
     </nav>
@@ -16,8 +15,7 @@
       <h1>Профиль</h1>
       <div v-if="isAuthenticated" class="profile-info">
         <div class="avatar-wrapper">
-<!--          <img :src="users.avatar || '/avatars/kj8DXcMNKxKdXLWAA8ZX5gRzo953pjvh.svg'" alt="User Avatar" class="avatar">-->
-          <img :src="'/avatars/kj8DXcMNKxKdXLWAA8ZX5gRzo953pjvh.svg'" alt="User Avatar" class="avatar">
+          <img :src="users.avatar || '/avatars/kj8DXcMNKxKdXLWAA8ZX5gRzo953pjvh.svg'" alt="User Avatar" class="avatar">
         </div>
         <div class="details">
           <table>
@@ -86,11 +84,7 @@ export default {
         });
         if (response.ok) {
           const userData = await response.json();
-          console.log('Fetched user profile:', userData);
           this.users = userData;
-          if (userData.avatar_url) {
-            this.users.avatar = userData.avatar_url;
-          }
         } else {
           console.error('Error fetching user profile:', response.statusText);
         }
@@ -122,7 +116,6 @@ export default {
         });
 
         if (response.ok) {
-          console.log('Account deleted successfully');
           this.logout();
         } else {
           const errorData = await response.json();

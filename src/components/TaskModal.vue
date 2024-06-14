@@ -8,7 +8,7 @@
           <input type="text" id="task-title" v-model="name" required class="input-field" />
         </div>
         <div class="form-group">
-          <label for="task-date">Дата начала</label>
+          <label for="task-date">Дата примерного конца срока задачи</label>
           <input type="date" id="task-date" v-model="date" required class="input-field" />
         </div>
         <div class="form-group">
