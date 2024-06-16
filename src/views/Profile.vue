@@ -1,21 +1,21 @@
 <template>
-  <div class="profile-container">
-    <nav class="navbar">
+  <nav class="navbar">
       <span v-if="!isAuthenticated">
         <router-link to="/login" class="navbar-item">Вход</router-link>
         <router-link to="/register" class="navbar-item">Регистрация</router-link>
       </span>
-      <span v-else>
+    <span v-else>
         <router-link to="/" class="navbar-item">Главная</router-link>
         <router-link to="/profile" class="navbar-item">Профиль</router-link>
         <router-link to="/" @click="logout" class="navbar-item">Выход</router-link>
       </span>
-    </nav>
+  </nav>
+  <div class="profile-container">
     <div class="profile-content">
       <h1>Профиль</h1>
       <div v-if="isAuthenticated" class="profile-info">
         <div class="avatar-wrapper">
-          <img :src="users.avatar || '/avatars/kj8DXcMNKxKdXLWAA8ZX5gRzo953pjvh.svg'" alt="User Avatar" class="avatar">
+          <img :src="avatarUrl || '/avatars/kj8DXcMNKxKdXLWAA8ZX5gRzo953pjvh.svg'" alt="User Avatar" class="avatar">
         </div>
         <div class="details">
           <table>
@@ -59,7 +59,8 @@ export default {
         avatar: '',
         created_at: ''
       },
-      isEditModalOpen: false
+      isEditModalOpen: false,
+      avatarUrl: null,
     };
   },
   mounted() {
@@ -85,11 +86,36 @@ export default {
         if (response.ok) {
           const userData = await response.json();
           this.users = userData;
+          if (this.users.avatar) {
+            this.avatarUrl = await this.fetchUserAvatar(this.users.id);
+          }
         } else {
           console.error('Error fetching user profile:', response.statusText);
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
+      }
+    },
+    async fetchUserAvatar(userId) {
+      try {
+        const url = thisUrl() + `/users/avatar`;
+        const userToken = localStorage.getItem('userToken');
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+        if (response.ok) {
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
+        } else {
+          console.error('Error fetching user avatar:', response.statusText);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error fetching user avatar:', error);
+        return null;
       }
     },
     openEditModal() {

@@ -1,3 +1,4 @@
+<!--кнопка добавлния доски-->
 <template>
   <button class="button-add">
     <span>+</span>

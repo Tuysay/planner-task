@@ -1,17 +1,14 @@
 <template>
   <div id="app" :style="appStyle">
-<!--    <Navbar />-->
     <router-view />
     <button @click="toggleTheme" class="theme-button">Сменить стиль</button>
   </div>
 </template>
 
 <script>
-import Navbar from './components/Navbar.vue';
 
 export default {
   components: {
-    Navbar
   },
   data() {
     return {

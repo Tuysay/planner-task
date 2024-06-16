@@ -1,3 +1,4 @@
+<!--окно с деталями задачи-->
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
@@ -11,11 +12,18 @@
           <strong>Срок окончания задачи:</strong>
           <input type="date" v-model="editableTask.date" class="editable-field" />
         </p>
-        <p v-if="imageError">
+        <p>
+          <strong>Дата создания:</strong>
+          <span class="created-at">{{ formattedCreatedAt }}</span>
+        </p>
+        <p v-if="!taskHasImage">
+          <strong>Фото:</strong> Фото нет
+        </p>
+        <p v-if="taskHasImage && imageError">
           <strong>Ошибка загрузки изображения:</strong>
           <span>{{ imageError }}</span>
         </p>
-        <p v-if="imageUrl && !imageError">
+        <p v-if="taskHasImage && imageUrl && !imageError">
           <strong>Изображение:</strong><br>
           <img :src="imageUrl" alt="Task Image" class="task-image" />
         </p>
@@ -43,11 +51,26 @@ export default {
     return {
       editableTask: { ...this.task },
       imageUrl: null,
-      imageError: null
+      imageError: null,
+      taskHasImage: false
     };
   },
+  computed: {
+    formattedCreatedAt() {
+      if (this.task.created_at) {
+        const date = new Date(this.task.created_at);
+        return date.toLocaleDateString('ru-RU', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+      return 'Неизвестно';
+    }
+  },
   async created() {
-    if (this.task.id) {
+    if (this.task.img) {
+      this.taskHasImage = true;
       this.imageUrl = await this.fetchTaskImage(this.task.id);
     }
   },
@@ -58,15 +81,32 @@ export default {
     async fetchTaskImage(taskId) {
       try {
         const url = `${thisUrl()}/tasks/image/${taskId}`;
-        const response = await fetch(url);
+        const userToken = localStorage.getItem('userToken');
+        if (!userToken) {
+          console.error('User token not found');
+          this.imageError = 'Пользователь не авторизован';
+          return null;
+        }
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+
         if (response.ok) {
-          return response.url;
-        } else if (response.status === 404) {
-          this.imageError = 'Изображение не найдено';
-          return null;
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
         } else {
-          this.imageError = 'Ошибка загрузки изображения';
-          return null;
+          const data = await response.json();
+          if (response.status === 404 && data.message === 'Изображение не найдено') {
+            this.imageError = data.message;
+            return null;
+          } else {
+            this.imageError = 'Ошибка загрузки изображения';
+            return null;
+          }
         }
       } catch (error) {
         console.error('Error fetching task image:', error);
@@ -269,4 +309,10 @@ button {
 .btn-close:hover {
   background-color: #626E70;
 }
+
+.created-at {
+  color: #555;
+  font-size: 14px;
+}
 </style>
+

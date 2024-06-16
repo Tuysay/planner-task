@@ -51,7 +51,7 @@ export default {
       avatar: null,
       loading: false,
       error: null,
-      errors: {}, // Объект для хранения ошибок валидации
+      errors: {},
     };
   },
   methods: {
@@ -77,7 +77,6 @@ export default {
         });
 
         if (response.ok) {
-          // Сброс формы и переход на страницу входа
           this.name = '';
           this.email = '';
           this.password = '';

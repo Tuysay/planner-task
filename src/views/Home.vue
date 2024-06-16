@@ -29,11 +29,11 @@
             <li v-for="task in desk.tasks" :key="task.id" :class="{ completed: task.completed }" @click="!task.completed && openTaskDetailModal(task)">
               <span>{{ task.name }}</span>
               <button v-if="!task.completed" @click.stop="markAsCompleted(task)" class="complete-button">Выполнено</button>
-              <!--              <button v-if="task.completed" @click.stop="markAsNotCompleted(task)" class="revert-button">Вернуть</button>-->
             </li>
           </ul>
           <div class="max-tasks-reached-message" v-if="maxTasksReachedDeskId === desk.id">
             <p>Доска {{ desk.name }} уже содержит максимальное количество задач (5). Новая задача не может быть добавлена.</p>
+            <button @click="confirmDeleteDesk(desk)" class="delete-desk-button">Удалить доску</button>
           </div>
           <TaskCreateButton @click="openTaskModal(desk.id)" />
         </div>
@@ -153,7 +153,12 @@ export default {
       tasks.forEach(task => {
         const desk = this.desks.find(d => d.id === task.desk_id);
         if (desk) {
-          // Check if the desk already has 7 tasks
+
+          if (new Date(task.created_at) >= new Date(task.date)) {
+            task.completed = 1;
+            this.markAsCompleted(task);
+          }
+
           if (desk.tasks.length < 5) {
             desk.tasks.push(task);
           } else {
@@ -162,7 +167,7 @@ export default {
               if (this.maxTasksReachedDeskId === desk.id) {
                 this.maxTasksReachedDeskId = null;
               }
-            }, 5000); // Установите время, через которое сообщение должно исчезнуть (в миллисекундах)
+            }, 5000);
           }
         }
       });
@@ -190,29 +195,33 @@ export default {
         console.error('Error marking task as completed:', error);
       }
     },
-    // async markAsNotCompleted(task) {
-    //   try {
-    //     const url = `${thisUrl()}/tasks/complete/${task.id}`;
-    //     const userToken = localStorage.getItem('userToken');
-    //     const response = await fetch(url, {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //         'Authorization': `Bearer ${userToken}`
-    //       },
-    //       body: JSON.stringify({ completed: 0 })
-    //     });
-    //     if (response.ok) {
-    //       task.completed = 0;
-    //       console.log('Task marked as not completed:', task);
-    //     } else {
-    //       const errorData = await response.json();
-    //       console.error('Error marking task as not completed:', errorData);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error marking task as not completed:', error);
-    //   }
-    // },
+    confirmDeleteDesk(desk) {
+      if (confirm(`Вы действительно хотите удалить доску "${desk.name}"?`)) {
+        this.deleteDesk(desk);
+      }
+    },
+    async deleteDesk(desk) {
+      try {
+        const url = `${thisUrl()}/desks/delete/${desk.id}`;
+
+        const userToken = localStorage.getItem('userToken');
+        const response = await fetch(url, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+
+        if (response.ok) {
+          this.fetchDesks(); // Обновляем список досок после удаления
+        } else {
+          console.error('Error deleting desk:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error deleting desk:', error);
+      }
+    },
     openEditModal(desk) {
       this.selectedDesk = desk;
       this.showEditModal = true;
@@ -458,5 +467,26 @@ export default {
   padding: 10px;
   margin-top: 10px;
 }
+
+.delete-desk-button {
+  background-color: #e74c3c;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.delete-desk-button:hover {
+  background-color: #800000;
+}
+
+.max-tasks-reached-message p {
+  margin: 0;
+  font-size: 14px;
+}
+
 </style>
 

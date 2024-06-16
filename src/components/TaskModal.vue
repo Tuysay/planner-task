@@ -1,3 +1,4 @@
+<!--окно при добавлении задачи-->
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
@@ -83,7 +84,7 @@ export default {
         } else {
           const errorData = await response.json();
           console.error('Error creating task:', errorData);
-          // Handle error
+
         }
       } catch (error) {
         console.error('Error creating task:', error);

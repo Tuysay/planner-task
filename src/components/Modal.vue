@@ -1,3 +1,4 @@
+<!--честно, дописав код, я не могу понять зачем оно надо) но без него уже не работает-->
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
