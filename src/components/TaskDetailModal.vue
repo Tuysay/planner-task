@@ -1,4 +1,3 @@
-<!--окно с деталями задачи-->
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
@@ -11,6 +10,7 @@
         <p>
           <strong>Срок окончания задачи:</strong>
           <input type="date" v-model="editableTask.date" class="editable-field" />
+          <span v-if="dateError" class="error-message">{{ dateError }}</span>
         </p>
         <p>
           <strong>Дата создания:</strong>
@@ -52,7 +52,8 @@ export default {
       editableTask: { ...this.task },
       imageUrl: null,
       imageError: null,
-      taskHasImage: false
+      taskHasImage: false,
+      dateError: null
     };
   },
   computed: {
@@ -66,6 +67,11 @@ export default {
         });
       }
       return 'Неизвестно';
+    },
+    isEndDateValid() {
+      const endDate = new Date(this.editableTask.date);
+      const createdAt = new Date(this.task.created_at);
+      return endDate >= createdAt;
     }
   },
   async created() {
@@ -115,6 +121,12 @@ export default {
       }
     },
     async saveChanges() {
+      if (!this.isEndDateValid) {
+        this.dateError = 'Дата завершения задачи не может быть меньше даты создания';
+        return;
+      }
+      this.dateError = null;
+
       try {
         const url = `${thisUrl()}/tasks/edit/${this.task.id}`;
         const userToken = localStorage.getItem('userToken');
@@ -259,10 +271,9 @@ export default {
   border: 1px solid #ccc;
 }
 
-.avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.error-message {
+  color: red;
+  font-size: 14px;
 }
 
 .button-group {
@@ -315,4 +326,3 @@ button {
   font-size: 14px;
 }
 </style>
-

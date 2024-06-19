@@ -1,4 +1,3 @@
-<!--окно при добавлении задачи-->
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
@@ -11,6 +10,7 @@
         <div class="form-group">
           <label for="task-date">Дата примерного конца срока задачи</label>
           <input type="date" id="task-date" v-model="date" required class="input-field" />
+          <span v-if="dateError" class="error-message">{{ dateError }}</span>
         </div>
         <div class="form-group">
           <label for="task-img">Изображение (необязательно)</label>
@@ -40,8 +40,17 @@ export default {
       name: '',
       date: '',
       img: null,
-      loading: false
+      loading: false,
+      dateError: null
     };
+  },
+  computed: {
+    isEndDateValid() {
+      const endDate = new Date(this.date);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Установить время в 00:00:00 для корректного сравнения
+      return endDate >= currentDate;
+    }
   },
   methods: {
     close() {
@@ -51,6 +60,12 @@ export default {
       this.img = event.target.files[0];
     },
     async submit() {
+      if (!this.isEndDateValid) {
+        this.dateError = 'Дата завершения задачи не может быть меньше текущей даты';
+        return;
+      }
+      this.dateError = null;
+
       try {
         this.loading = true;
 
@@ -84,7 +99,6 @@ export default {
         } else {
           const errorData = await response.json();
           console.error('Error creating task:', errorData);
-
         }
       } catch (error) {
         console.error('Error creating task:', error);
@@ -146,6 +160,11 @@ export default {
   width: 95%;
   padding: 8px;
   font-size: 1rem;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
 }
 
 .button-group {
